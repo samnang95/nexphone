@@ -1,0 +1,24 @@
+{
+  "name": "nexphone-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "NexPhone Platform - Monorepo for API, Admin Dashboard, and Web Portal with multi-flavor support",
+  "scripts": {
+    "dev": "npx -y concurrently -c \"cyan,magenta,green\" -n \"api,admin,web\" \"npm run dev --prefix nexphone-api\" \"npm run dev --prefix nexphone-admin\" \"npm run dev --prefix nexphone-web\"",
+    "dev:staging": "npx -y concurrently -c \"cyan,magenta,green\" -n \"api,admin,web\" \"npm run dev:staging --prefix nexphone-api\" \"npm run dev:staging --prefix nexphone-admin\" \"npm run dev:staging --prefix nexphone-web\"",
+    "dev:prod": "npx -y concurrently -c \"cyan,magenta,green\" -n \"api,admin,web\" \"npm run dev:prod --prefix nexphone-api\" \"npm run dev:prod --prefix nexphone-admin\" \"npm run dev:prod --prefix nexphone-web\"",
+    "dev:api": "npm run dev --prefix nexphone-api",
+    "dev:api:staging": "npm run dev:staging --prefix nexphone-api",
+    "dev:api:prod": "npm run dev:prod --prefix nexphone-api",
+    "dev:admin": "npm run dev --prefix nexphone-admin",
+    "dev:admin:staging": "npm run dev:staging --prefix nexphone-admin",
+    "dev:admin:prod": "npm run dev:prod --prefix nexphone-admin",
+    "dev:web": "npm run dev --prefix nexphone-web",
+    "dev:web:staging": "npm run dev:staging --prefix nexphone-web",
+    "dev:web:prod": "npm run dev:prod --prefix nexphone-web",
+    "build": "npm run build --prefix nexphone-api && npm run build --prefix nexphone-admin && npm run build --prefix nexphone-web",
+    "build:dev": "npm run build --prefix nexphone-api && npm run build:dev --prefix nexphone-admin && npm run build:dev --prefix nexphone-web",
+    "build:staging": "npm run build --prefix nexphone-api && npm run build:staging --prefix nexphone-admin && npm run build:staging --prefix nexphone-web",
+    "build:prod": "npm run build --prefix nexphone-api && npm run build:prod --prefix nexphone-admin && npm run build:prod --prefix nexphone-web"
+  }
+}

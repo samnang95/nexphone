@@ -1,12 +1,25 @@
 {
   "name": "nexphone-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "NexPhone Core Backend API with multi-flavor environment support",
+  "main": "dist/index.js",
   "scripts": {
+    "dev": "tsx watch src/index.ts --flavor=dev",
+    "dev:staging": "tsx watch src/index.ts --flavor=staging",
+    "dev:prod": "tsx watch src/index.ts --flavor=prod",
+    "build": "tsc",
+    "start": "tsx src/index.ts --flavor=prod",
+    "start:staging": "tsx src/index.ts --flavor=staging",
+    "start:dev": "tsx src/index.ts --flavor=dev",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
+  "keywords": [
+    "nexphone",
+    "voip",
+    "api",
+    "express",
+    "typescript"
+  ],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
@@ -24,6 +37,6 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.6.4",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
+    "typescript": "^5.8.2"
   }
 }

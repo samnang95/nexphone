@@ -1,0 +1,32 @@
+{
+  "name": "nexphone-admin",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "dotenv -e .env.dev -- next dev -p 3001",
+    "dev:staging": "dotenv -e .env.staging -- next dev -p 3001",
+    "dev:prod": "dotenv -e .env.prod -- next dev -p 3001",
+    "build": "dotenv -e .env.prod -- next build",
+    "build:dev": "dotenv -e .env.dev -- next build",
+    "build:staging": "dotenv -e .env.staging -- next build",
+    "build:prod": "dotenv -e .env.prod -- next build",
+    "start": "dotenv -e .env.prod -- next start -p 3001",
+    "lint": "eslint"
+  },
+  "dependencies": {
+    "next": "16.4.0",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/turbopack": "^4",
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "dotenv-cli": "^11.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "16.4.0",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}
