@@ -33,6 +33,12 @@ function NavIcon({ name, className }: { name?: string; className?: string }) {
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75 12 2.25l8.25 4.5M3.75 6.75v10.5L12 21.75M3.75 6.75l8.25 4.5m8.25-4.5v10.5L12 21.75m0-10.5v10.5" />
         </svg>
       );
+    case "shopping-bag":
+      return (
+        <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007Z" />
+        </svg>
+      );
     case "smartphone":
       return (
         <svg className={className} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
