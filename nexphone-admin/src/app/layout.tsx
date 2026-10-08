@@ -34,8 +34,8 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className={`dark ${inter.variable} antialiased`}>
-      <body className="min-h-screen bg-slate-950 font-sans text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
+    <html lang="en" className={`dark ${inter.variable} antialiased overscroll-none`}>
+      <body className="min-h-screen bg-slate-950 font-sans text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200 overscroll-none">
         <AuthProvider>
           <AppShell>
             {children}

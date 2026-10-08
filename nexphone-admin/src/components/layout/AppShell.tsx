@@ -30,11 +30,14 @@ function AppShellContent({ children }: AppShellProps) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-950">
+    <div
+      id="app-shell-content"
+      className="flex h-screen overflow-hidden bg-slate-950 overscroll-none transition-[filter] duration-200"
+    >
       <Sidebar />
-      <div className="flex flex-1 flex-col min-w-0 h-screen overflow-hidden">
+      <div className="flex flex-1 flex-col min-w-0 h-screen overflow-hidden overscroll-none">
         <Header />
-        <div className="flex-1 overflow-y-auto">
+        <div className="flex-1 overflow-y-auto overscroll-none">
           {children}
         </div>
       </div>
