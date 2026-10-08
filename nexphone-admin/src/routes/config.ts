@@ -78,6 +78,15 @@ export const ROUTE_REGISTRY: Record<string, RouteMeta> = {
     badge: "Orders",
     iconName: "shopping-bag",
   },
+  customers: {
+    key: "customers",
+    path: ROUTES.CUSTOMERS.ROOT,
+    title: "Customer Management",
+    description: "Manage customer profiles, enterprise VIPs, security flags, and account access permissions.",
+    category: "Core",
+    badge: "Users",
+    iconName: "users",
+  },
   devices: {
     key: "devices",
     path: ROUTES.DEVICES.ROOT,
@@ -140,6 +149,7 @@ export const ADMIN_NAV_SECTIONS: readonly NavRouteSection[] = [
       { title: "Brand Partners", href: ROUTES.BRANDS.ROOT, badge: "Fleet", iconName: "award" },
       { title: "Inventory Hub", href: ROUTES.INVENTORY.ROOT, badge: "Supply", iconName: "archive" },
       { title: "Orders Fleet", href: ROUTES.ORDERS.ROOT, badge: "Orders", iconName: "shopping-bag" },
+      { title: "Customer Base", href: ROUTES.CUSTOMERS.ROOT, badge: "Users", iconName: "users" },
       { title: "Connected Devices", href: ROUTES.DEVICES.ROOT, badge: "Live", iconName: "smartphone" },
     ],
   },
@@ -189,6 +199,8 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
       crumbs.push({ label: "Inventory Hub", href: ROUTES.INVENTORY.ROOT, isCurrent });
     } else if (segment === "orders") {
       crumbs.push({ label: "Order Management", href: ROUTES.ORDERS.ROOT, isCurrent });
+    } else if (segment === "customers") {
+      crumbs.push({ label: "Customer Management", href: ROUTES.CUSTOMERS.ROOT, isCurrent });
     } else if (segment === "devices") {
       crumbs.push({ label: "Connected Devices", href: ROUTES.DEVICES.ROOT, isCurrent });
     } else if (i > 0 && segments[i - 1] === "devices") {
