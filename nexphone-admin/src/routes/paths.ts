@@ -5,6 +5,10 @@ export const ROUTES = {
     FORGOT_PASSWORD: "/forgot-password",
     RESET_PASSWORD: "/reset-password",
   },
+  PRODUCTS: {
+    ROOT: "/products",
+    DETAIL: (id: string | number) => `/products/${encodeURIComponent(String(id))}`,
+  },
   PROFILE: "/profile",
   DEVICES: {
     ROOT: "/devices",

@@ -106,14 +106,21 @@ export default function SettingsPage() {
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">
                   VoIP Media Quality Ingestion Rate
                 </label>
-                <select
-                  defaultValue="realtime"
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
-                >
-                  <option value="realtime">Continuous Real-time (WebSocket)</option>
-                  <option value="5s">Every 5 Seconds (Batched)</option>
-                  <option value="30s">Every 30 Seconds (Low Bandwidth)</option>
-                </select>
+                <div className="relative">
+                  <select
+                    defaultValue="realtime"
+                    className="w-full appearance-none rounded-lg border border-slate-800 bg-slate-950 pl-3 pr-8 py-2 text-sm text-white transition-colors hover:border-slate-700 hover:text-white focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 cursor-pointer"
+                  >
+                    <option value="realtime">Continuous Real-time (WebSocket)</option>
+                    <option value="5s">Every 5 Seconds (Batched)</option>
+                    <option value="30s">Every 30 Seconds (Low Bandwidth)</option>
+                  </select>
+                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400">
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="m19.5 8.25-7.5 7.5-7.5-7.5" />
+                    </svg>
+                  </div>
+                </div>
               </div>
             </div>
 

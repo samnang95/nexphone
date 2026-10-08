@@ -42,3 +42,17 @@ body.modal-open #app-shell-content {
   pointer-events: none;
   user-select: none;
 }
+
+/* Completely hide Next.js Dev Indicator, Agent Feedback widget and dev portals */
+nextjs-portal,
+[data-nextjs-toast],
+[data-nextjs-dev-indicator],
+[data-nextjs-agent-feedback],
+[data-next-badge],
+#next-route-announcer {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+

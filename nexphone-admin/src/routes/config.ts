@@ -42,6 +42,15 @@ export const ROUTE_REGISTRY: Record<string, RouteMeta> = {
     category: "System",
     iconName: "user",
   },
+  products: {
+    key: "products",
+    path: ROUTES.PRODUCTS.ROOT,
+    title: "Product Management",
+    description: "Manage commercial phones, hardware specifications, color/storage variants, and 3D digital twins.",
+    category: "Core",
+    badge: "Catalog",
+    iconName: "package",
+  },
   devices: {
     key: "devices",
     path: ROUTES.DEVICES.ROOT,
@@ -100,6 +109,7 @@ export const ADMIN_NAV_SECTIONS: readonly NavRouteSection[] = [
     title: "Core",
     items: [
       { title: "Overview", href: ROUTES.HOME, iconName: "layout-dashboard" },
+      { title: "Product Catalog", href: ROUTES.PRODUCTS.ROOT, badge: "New", iconName: "package" },
       { title: "Connected Devices", href: ROUTES.DEVICES.ROOT, badge: "Live", iconName: "smartphone" },
     ],
   },
@@ -141,7 +151,9 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
     accumulatedPath += `/${segment}`;
     const isCurrent = i === segments.length - 1;
 
-    if (segment === "devices") {
+    if (segment === "products") {
+      crumbs.push({ label: "Product Management", href: ROUTES.PRODUCTS.ROOT, isCurrent });
+    } else if (segment === "devices") {
       crumbs.push({ label: "Connected Devices", href: ROUTES.DEVICES.ROOT, isCurrent });
     } else if (i > 0 && segments[i - 1] === "devices") {
       crumbs.push({ label: `Device (${segment})`, href: accumulatedPath, isCurrent });
