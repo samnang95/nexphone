@@ -4247,6 +4247,557 @@ app.get("/api/reviews-metrics", (_req: Request, res: Response) => {
   });
 });
 
+// ==========================================
+// PROMOTION MANAGEMENT STORE & ENDPOINTS
+// ==========================================
+
+export interface PromotionRecord {
+  id: string;
+  code?: string;
+  title: string;
+  description: string;
+  type: "promo_code" | "sale_campaign" | "automatic";
+  discountType: "percentage" | "fixed_amount" | "free_shipping" | "buy_x_get_y";
+  discountValue: number;
+  minOrderValue?: number;
+  maxDiscountAmount?: number;
+  scope: "all_products" | "specific_products" | "specific_brands" | "min_order_value";
+  targetItems?: string[];
+  status: "active" | "scheduled" | "expired" | "disabled";
+  startDate: string;
+  endDate: string | null;
+  usageLimit?: number | null;
+  usedCount: number;
+  customerLimit?: number;
+  campaignTag?: string;
+  bannerColor?: "indigo" | "rose" | "amber" | "emerald" | "purple" | "cyan";
+  revenueGenerated: number;
+  ordersCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+const nowTime = Date.now();
+const ONE_DAY = 1000 * 60 * 60 * 24;
+
+export const promotionsStore: PromotionRecord[] = [
+  {
+    id: "promo-001",
+    code: "NEXLAUNCH20",
+    title: "NexPhone 15 Pro Commercial Launch",
+    description: "Launch coupon providing 20% discount on all NexPhone 15 Pro Max and Enterprise hardware configurations.",
+    type: "promo_code",
+    discountType: "percentage",
+    discountValue: 20,
+    minOrderValue: 800,
+    maxDiscountAmount: 400,
+    scope: "specific_products",
+    targetItems: ["NexPhone 15 Pro Max", "NexPhone Enterprise Edge Fleet Pack"],
+    status: "active",
+    startDate: new Date(nowTime - 7 * ONE_DAY).toISOString(),
+    endDate: new Date(nowTime + 21 * ONE_DAY).toISOString(),
+    usageLimit: 1000,
+    usedCount: 342,
+    customerLimit: 1,
+    campaignTag: "Flagship Launch",
+    bannerColor: "indigo",
+    revenueGenerated: 348500,
+    ordersCount: 342,
+    createdAt: new Date(nowTime - 7 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 1 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-002",
+    code: "FLEETVIP100",
+    title: "Enterprise Fleet Upgrade Voucher",
+    description: "Instant $100 off bulk orders exceeding $1,500 for corporate verified accounts.",
+    type: "promo_code",
+    discountType: "fixed_amount",
+    discountValue: 100,
+    minOrderValue: 1500,
+    scope: "all_products",
+    targetItems: ["All Catalog Products"],
+    status: "active",
+    startDate: new Date(nowTime - 14 * ONE_DAY).toISOString(),
+    endDate: new Date(nowTime + 45 * ONE_DAY).toISOString(),
+    usageLimit: 250,
+    usedCount: 89,
+    customerLimit: 2,
+    campaignTag: "Enterprise VIP",
+    bannerColor: "purple",
+    revenueGenerated: 168200,
+    ordersCount: 89,
+    createdAt: new Date(nowTime - 14 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 2 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-003",
+    code: "FREESHIP",
+    title: "Global Express Courier Shipping",
+    description: "Complimentary worldwide express air dispatch on all mobile fleets over $300.",
+    type: "promo_code",
+    discountType: "free_shipping",
+    discountValue: 0,
+    minOrderValue: 300,
+    scope: "all_products",
+    targetItems: ["All Catalog Products"],
+    status: "active",
+    startDate: new Date(nowTime - 30 * ONE_DAY).toISOString(),
+    endDate: null,
+    usageLimit: null,
+    usedCount: 1280,
+    customerLimit: 5,
+    campaignTag: "Shipping Perk",
+    bannerColor: "emerald",
+    revenueGenerated: 940000,
+    ordersCount: 1280,
+    createdAt: new Date(nowTime - 30 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 1 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-004",
+    title: "NexPhone Spring Fleet Expo 2026",
+    description: "Sitewide seasonal commercial campaign offering 12% off entire order plus 1 year free Satellite VoIP service trial.",
+    type: "sale_campaign",
+    discountType: "percentage",
+    discountValue: 12,
+    minOrderValue: 500,
+    maxDiscountAmount: 350,
+    scope: "all_products",
+    targetItems: ["Entire Hardware Catalog"],
+    status: "active",
+    startDate: new Date(nowTime - 3 * ONE_DAY).toISOString(),
+    endDate: new Date(nowTime + 4 * ONE_DAY).toISOString(),
+    usageLimit: null,
+    usedCount: 512,
+    campaignTag: "Spring Expo",
+    bannerColor: "cyan",
+    revenueGenerated: 624000,
+    ordersCount: 512,
+    createdAt: new Date(nowTime - 5 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 1 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-005",
+    title: "Titanium Premiere Accessories Flash Sale",
+    description: "Exclusive 25% reduction on high-durability titanium cases, MagSafe power hubs, and encrypted audio accessories.",
+    type: "sale_campaign",
+    discountType: "percentage",
+    discountValue: 25,
+    scope: "specific_brands",
+    targetItems: ["NexPhone Labs Titanium Series", "Encrypted Peripherals"],
+    status: "active",
+    startDate: new Date(nowTime - 1 * ONE_DAY).toISOString(),
+    endDate: new Date(nowTime + 2 * ONE_DAY).toISOString(),
+    usageLimit: 300,
+    usedCount: 214,
+    campaignTag: "Flash Sale",
+    bannerColor: "rose",
+    revenueGenerated: 42800,
+    ordersCount: 214,
+    createdAt: new Date(nowTime - 1 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime).toISOString(),
+  },
+  {
+    id: "promo-006",
+    code: "CYBEREARLY",
+    title: "Cyber Surge VIP Early Bird Access",
+    description: "Exclusive pre-launch promo code granting 15% discount for registered fleet managers prior to public Cyber Week.",
+    type: "promo_code",
+    discountType: "percentage",
+    discountValue: 15,
+    minOrderValue: 1000,
+    maxDiscountAmount: 600,
+    scope: "all_products",
+    targetItems: ["All Catalog Products"],
+    status: "scheduled",
+    startDate: new Date(nowTime + 7 * ONE_DAY).toISOString(),
+    endDate: new Date(nowTime + 21 * ONE_DAY).toISOString(),
+    usageLimit: 500,
+    usedCount: 0,
+    customerLimit: 1,
+    campaignTag: "Cyber Surge",
+    bannerColor: "indigo",
+    revenueGenerated: 0,
+    ordersCount: 0,
+    createdAt: new Date(nowTime - 2 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 2 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-007",
+    title: "Black Friday Global Fleet Surge 2026",
+    description: "Massive upcoming sitewide hardware sale with up to 30% off tier 2 bulk orders and subsidized data roaming.",
+    type: "sale_campaign",
+    discountType: "percentage",
+    discountValue: 30,
+    minOrderValue: 2000,
+    maxDiscountAmount: 1200,
+    scope: "all_products",
+    targetItems: ["Enterprise Fleet Bundles"],
+    status: "scheduled",
+    startDate: new Date(nowTime + 18 * ONE_DAY).toISOString(),
+    endDate: new Date(nowTime + 25 * ONE_DAY).toISOString(),
+    usageLimit: null,
+    usedCount: 0,
+    campaignTag: "Black Friday",
+    bannerColor: "amber",
+    revenueGenerated: 0,
+    ordersCount: 0,
+    createdAt: new Date(nowTime - 4 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 4 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-008",
+    title: "Enterprise Tier 3 Volume Auto-Rebate",
+    description: "Automatic checkout reduction of $600 for enterprise purchase orders totaling over $5,000.",
+    type: "automatic",
+    discountType: "fixed_amount",
+    discountValue: 600,
+    minOrderValue: 5000,
+    scope: "min_order_value",
+    targetItems: ["Orders above $5,000 USD"],
+    status: "active",
+    startDate: new Date(nowTime - 60 * ONE_DAY).toISOString(),
+    endDate: null,
+    usageLimit: null,
+    usedCount: 76,
+    campaignTag: "Volume Rebate",
+    bannerColor: "emerald",
+    revenueGenerated: 485000,
+    ordersCount: 76,
+    createdAt: new Date(nowTime - 60 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 10 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-009",
+    code: "SUMMER50",
+    title: "Mid-Year Mid-Summer Upgrade Voucher",
+    description: "Summer promotional discount of $50 off on select NexPhone Lite models.",
+    type: "promo_code",
+    discountType: "fixed_amount",
+    discountValue: 50,
+    minOrderValue: 400,
+    scope: "specific_products",
+    targetItems: ["NexPhone Lite"],
+    status: "expired",
+    startDate: new Date(nowTime - 90 * ONE_DAY).toISOString(),
+    endDate: new Date(nowTime - 15 * ONE_DAY).toISOString(),
+    usageLimit: 200,
+    usedCount: 200,
+    customerLimit: 1,
+    campaignTag: "Summer Promo",
+    bannerColor: "amber",
+    revenueGenerated: 98000,
+    ordersCount: 200,
+    createdAt: new Date(nowTime - 90 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 15 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-010",
+    title: "Q3 Inventory Deprecation Clearance",
+    description: "Final clearance event for Gen 11 devices with 35% clearance markdown.",
+    type: "sale_campaign",
+    discountType: "percentage",
+    discountValue: 35,
+    scope: "specific_products",
+    targetItems: ["NexPhone Gen 11 Refurbished"],
+    status: "expired",
+    startDate: new Date(nowTime - 45 * ONE_DAY).toISOString(),
+    endDate: new Date(nowTime - 5 * ONE_DAY).toISOString(),
+    usageLimit: 150,
+    usedCount: 148,
+    campaignTag: "Clearance",
+    bannerColor: "rose",
+    revenueGenerated: 74200,
+    ordersCount: 148,
+    createdAt: new Date(nowTime - 45 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 5 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-011",
+    code: "DEVTEST10",
+    title: "Sandbox Testing Voucher",
+    description: "Internal engineering test discount code for automated telemetry pipelines.",
+    type: "promo_code",
+    discountType: "percentage",
+    discountValue: 10,
+    minOrderValue: 100,
+    scope: "all_products",
+    targetItems: ["Sandbox Environments"],
+    status: "disabled",
+    startDate: new Date(nowTime - 20 * ONE_DAY).toISOString(),
+    endDate: new Date(nowTime + 100 * ONE_DAY).toISOString(),
+    usageLimit: 50,
+    usedCount: 12,
+    customerLimit: 1,
+    campaignTag: "Internal QA",
+    bannerColor: "purple",
+    revenueGenerated: 2400,
+    ordersCount: 12,
+    createdAt: new Date(nowTime - 20 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 1 * ONE_DAY).toISOString(),
+  },
+  {
+    id: "promo-012",
+    title: "Gov & Education Fleet Starter Rebate",
+    description: "Automatic $300 equipment subsidy for verified academic laboratories and municipal agencies.",
+    type: "automatic",
+    discountType: "fixed_amount",
+    discountValue: 300,
+    minOrderValue: 2500,
+    scope: "specific_brands",
+    targetItems: ["NexPhone Education Labs"],
+    status: "active",
+    startDate: new Date(nowTime - 40 * ONE_DAY).toISOString(),
+    endDate: null,
+    usageLimit: 100,
+    usedCount: 41,
+    campaignTag: "Public Sector",
+    bannerColor: "cyan",
+    revenueGenerated: 145000,
+    ordersCount: 41,
+    createdAt: new Date(nowTime - 40 * ONE_DAY).toISOString(),
+    updatedAt: new Date(nowTime - 3 * ONE_DAY).toISOString(),
+  }
+];
+
+// GET /api/promotions
+app.get("/api/promotions", (req: Request, res: Response) => {
+  const { search, type, status, sortBy } = req.query;
+  let result = [...promotionsStore];
+
+  if (typeof search === "string" && search.trim()) {
+    const q = search.toLowerCase().trim();
+    result = result.filter(
+      (p) =>
+        p.title.toLowerCase().includes(q) ||
+        (p.code && p.code.toLowerCase().includes(q)) ||
+        p.description.toLowerCase().includes(q) ||
+        (p.campaignTag && p.campaignTag.toLowerCase().includes(q)) ||
+        (p.targetItems && p.targetItems.some((t) => t.toLowerCase().includes(q)))
+    );
+  }
+
+  if (typeof type === "string" && type !== "all") {
+    result = result.filter((p) => p.type === type);
+  }
+
+  if (typeof status === "string" && status !== "all") {
+    result = result.filter((p) => p.status === status);
+  }
+
+  if (sortBy === "highest_discount") {
+    result.sort((a, b) => b.discountValue - a.discountValue);
+  } else if (sortBy === "most_used") {
+    result.sort((a, b) => b.usedCount - a.usedCount);
+  } else if (sortBy === "revenue_desc") {
+    result.sort((a, b) => b.revenueGenerated - a.revenueGenerated);
+  } else if (sortBy === "ending_soon") {
+    result.sort((a, b) => {
+      if (!a.endDate) return 1;
+      if (!b.endDate) return -1;
+      return new Date(a.endDate).getTime() - new Date(b.endDate).getTime();
+    });
+  } else {
+    // Default: recent
+    result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  res.json(result);
+});
+
+// GET /api/promotions/:id
+app.get("/api/promotions/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const idUpper = id.toUpperCase();
+  const promo = promotionsStore.find((p) => p.id === id || (p.code && p.code.toUpperCase() === idUpper));
+  if (!promo) {
+    res.status(404).json({ error: "Promotion not found" });
+    return;
+  }
+  res.json(promo);
+});
+
+// POST /api/promotions (Create discount/promo code/sale campaign)
+app.post("/api/promotions", (req: Request, res: Response) => {
+  const body = req.body || {};
+  if (!body.title || !body.discountType) {
+    res.status(400).json({ error: "Title and discountType are required fields" });
+    return;
+  }
+
+  // Format code if promo_code
+  let formattedCode: string | undefined = undefined;
+  if (body.type === "promo_code" || body.code) {
+    formattedCode = String(body.code || `NEX-${Math.random().toString(36).substring(2, 7).toUpperCase()}`).trim().toUpperCase();
+    const existing = promotionsStore.find((p) => p.code === formattedCode);
+    if (existing) {
+      res.status(409).json({ error: `Promo code "${formattedCode}" already exists. Please choose a unique code.` });
+      return;
+    }
+  }
+
+  const now = new Date().toISOString();
+  const newId = `promo-${Date.now().toString(36)}-${Math.floor(Math.random() * 1000)}`;
+
+  const newPromo: PromotionRecord = {
+    id: newId,
+    code: formattedCode,
+    title: String(body.title).trim(),
+    description: String(body.description || "Active promotion").trim(),
+    type: body.type || (formattedCode ? "promo_code" : "sale_campaign"),
+    discountType: body.discountType,
+    discountValue: Number(body.discountValue) || 0,
+    minOrderValue: body.minOrderValue ? Number(body.minOrderValue) : undefined,
+    maxDiscountAmount: body.maxDiscountAmount ? Number(body.maxDiscountAmount) : undefined,
+    scope: body.scope || "all_products",
+    targetItems: Array.isArray(body.targetItems) ? body.targetItems : (body.targetItems ? [body.targetItems] : ["All Products"]),
+    status: body.status || "active",
+    startDate: body.startDate || now,
+    endDate: body.endDate || null,
+    usageLimit: body.usageLimit ? Number(body.usageLimit) : null,
+    usedCount: 0,
+    customerLimit: body.customerLimit ? Number(body.customerLimit) : 1,
+    campaignTag: body.campaignTag || (body.type === "sale_campaign" ? "Sale Campaign" : "Promo Code"),
+    bannerColor: body.bannerColor || "indigo",
+    revenueGenerated: 0,
+    ordersCount: 0,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  promotionsStore.unshift(newPromo);
+  res.status(201).json(newPromo);
+});
+
+// PUT /api/promotions/:id (Edit discount)
+app.put("/api/promotions/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const idUpper = id.toUpperCase();
+  const index = promotionsStore.findIndex((p) => p.id === id || (p.code && p.code.toUpperCase() === idUpper));
+  if (index === -1) {
+    res.status(404).json({ error: "Promotion not found" });
+    return;
+  }
+
+  const current = promotionsStore[index]!;
+  const body = req.body || {};
+
+  // Check code uniqueness if changing code
+  if (body.code && body.code.toUpperCase() !== current.code) {
+    const newCode = body.code.toUpperCase().trim();
+    const existing = promotionsStore.find((p) => p.code === newCode && p.id !== current.id);
+    if (existing) {
+      res.status(409).json({ error: `Promo code "${newCode}" already in use by another promotion.` });
+      return;
+    }
+  }
+
+  const updated: PromotionRecord = {
+    ...current,
+    title: body.title !== undefined ? String(body.title).trim() : current.title,
+    code: body.code !== undefined ? (body.code ? String(body.code).trim().toUpperCase() : undefined) : current.code,
+    description: body.description !== undefined ? String(body.description).trim() : current.description,
+    type: body.type || current.type,
+    discountType: body.discountType || current.discountType,
+    discountValue: body.discountValue !== undefined ? Number(body.discountValue) : current.discountValue,
+    minOrderValue: body.minOrderValue !== undefined ? Number(body.minOrderValue) : current.minOrderValue,
+    maxDiscountAmount: body.maxDiscountAmount !== undefined ? Number(body.maxDiscountAmount) : current.maxDiscountAmount,
+    scope: body.scope || current.scope,
+    targetItems: body.targetItems !== undefined ? (Array.isArray(body.targetItems) ? body.targetItems : [body.targetItems]) : current.targetItems,
+    status: body.status || current.status,
+    startDate: body.startDate || current.startDate,
+    endDate: body.endDate !== undefined ? body.endDate : current.endDate,
+    usageLimit: body.usageLimit !== undefined ? (body.usageLimit ? Number(body.usageLimit) : null) : current.usageLimit,
+    customerLimit: body.customerLimit !== undefined ? Number(body.customerLimit) : current.customerLimit,
+    campaignTag: body.campaignTag !== undefined ? String(body.campaignTag).trim() : current.campaignTag,
+    bannerColor: body.bannerColor || current.bannerColor,
+    updatedAt: new Date().toISOString(),
+  };
+
+  promotionsStore[index] = updated;
+  res.json(updated);
+});
+
+// DELETE /api/promotions/:id (Delete discount)
+app.delete("/api/promotions/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const idUpper = id.toUpperCase();
+  const index = promotionsStore.findIndex((p) => p.id === id || (p.code && p.code.toUpperCase() === idUpper));
+  if (index === -1) {
+    res.status(404).json({ error: "Promotion not found" });
+    return;
+  }
+
+  const [deleted] = promotionsStore.splice(index, 1);
+  res.json({ message: "Promotion removed successfully", promotion: deleted });
+});
+
+// PATCH /api/promotions/:id/status (Toggle active/disabled/scheduled)
+app.patch("/api/promotions/:id/status", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const idUpper = id.toUpperCase();
+  const { status } = req.body || {};
+  const index = promotionsStore.findIndex((p) => p.id === id || (p.code && p.code.toUpperCase() === idUpper));
+  if (index === -1) {
+    res.status(404).json({ error: "Promotion not found" });
+    return;
+  }
+
+  if (!["active", "scheduled", "expired", "disabled"].includes(status)) {
+    res.status(400).json({ error: "Invalid status value" });
+    return;
+  }
+
+  promotionsStore[index] = {
+    ...promotionsStore[index]!,
+    status,
+    updatedAt: new Date().toISOString(),
+  };
+
+  res.json(promotionsStore[index]);
+});
+
+// GET /api/promotions-metrics
+app.get("/api/promotions-metrics", (_req: Request, res: Response) => {
+  const totalPromotions = promotionsStore.length;
+  const activePromotions = promotionsStore.filter((p) => p.status === "active").length;
+  const scheduledCampaigns = promotionsStore.filter((p) => p.status === "scheduled").length;
+  const expiredPromotions = promotionsStore.filter((p) => p.status === "expired").length;
+
+  const totalRedemptions = promotionsStore.reduce((acc, p) => acc + (p.usedCount || 0), 0);
+  const totalRevenueGenerated = promotionsStore.reduce((acc, p) => acc + (p.revenueGenerated || 0), 0);
+
+  // Calculate approximate discount given
+  const totalDiscountGiven = promotionsStore.reduce((acc, p) => {
+    if (p.discountType === "fixed_amount") {
+      return acc + p.discountValue * (p.usedCount || 0);
+    } else if (p.discountType === "percentage") {
+      // average ~15% on attributed sales
+      return acc + Math.round((p.revenueGenerated || 0) * (p.discountValue / 100));
+    } else {
+      // free shipping (~$35 saved per order)
+      return acc + (p.usedCount || 0) * 35;
+    }
+  }, 0);
+
+  const activePromoCodesCount = promotionsStore.filter(
+    (p) => p.type === "promo_code" && p.status === "active"
+  ).length;
+
+  res.json({
+    totalPromotions,
+    activePromotions,
+    scheduledCampaigns,
+    expiredPromotions,
+    totalRedemptions,
+    totalDiscountGiven,
+    totalRevenueGenerated,
+    activePromoCodesCount,
+  });
+});
+
+
 
 
 
