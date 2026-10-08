@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { getDevices } from "@/services/dashboard.service";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { ROUTES } from "@/routes";
 
 export const metadata: Metadata = {
   title: "Connected Devices",
@@ -12,17 +15,23 @@ export default async function DevicesPage() {
   const devices = await getDevices();
 
   return (
-    <div className="space-y-6 p-6 md:p-8">
-      <div className="flex flex-col justify-between gap-4 md:flex-row md:items-center">
+    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 md:p-8">
+      <Breadcrumbs />
+      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-white md:text-3xl">
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
             Connected Devices
           </h1>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-1 text-xs sm:text-sm text-slate-400">
             Real-time status, diagnostics, and firmware deployment for active hardware.
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          <Link href={ROUTES.TELEMETRY}>
+            <Button variant="secondary" size="sm">
+              Live Telemetry
+            </Button>
+          </Link>
           <Button variant="primary" size="sm">
             + Provision New Device
           </Button>
@@ -32,7 +41,7 @@ export default async function DevicesPage() {
       {/* Devices Table */}
       <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 shadow-sm backdrop-blur-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
+          <table className="w-full min-w-[640px] text-left text-sm text-slate-300">
             <thead className="border-b border-slate-800 bg-slate-950/50 text-xs font-semibold uppercase tracking-wider text-slate-400">
               <tr>
                 <th scope="col" className="px-6 py-4">Device Model</th>
@@ -47,7 +56,14 @@ export default async function DevicesPage() {
             <tbody className="divide-y divide-slate-800/60">
               {devices.map((device) => (
                 <tr key={device.id} className="transition-colors hover:bg-slate-800/40">
-                  <td className="px-6 py-4 font-medium text-white">{device.model}</td>
+                  <td className="px-6 py-4 font-medium text-white">
+                    <Link
+                      href={ROUTES.DEVICES.DETAIL(device.id)}
+                      className="transition-colors hover:text-indigo-400"
+                    >
+                      {device.model}
+                    </Link>
+                  </td>
                   <td className="px-6 py-4 font-mono text-xs text-slate-400">{device.serialNumber}</td>
                   <td className="px-6 py-4">
                     <Badge
@@ -68,9 +84,12 @@ export default async function DevicesPage() {
                   </td>
                   <td className="px-6 py-4 text-xs text-slate-400">{device.location}</td>
                   <td className="px-6 py-4 text-right">
-                    <button className="text-xs font-medium text-indigo-400 hover:text-indigo-300">
-                      Diagnostics
-                    </button>
+                    <Link
+                      href={ROUTES.DEVICES.DETAIL(device.id)}
+                      className="text-xs font-medium text-indigo-400 transition-colors hover:text-indigo-300 hover:underline"
+                    >
+                      Diagnostics &rarr;
+                    </Link>
                   </td>
                 </tr>
               ))}

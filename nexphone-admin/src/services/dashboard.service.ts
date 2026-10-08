@@ -98,3 +98,22 @@ export async function getDevices(): Promise<readonly Device[]> {
     },
   ];
 }
+
+export async function getDeviceById(id: string): Promise<Device | null> {
+  const devices = await getDevices();
+  const found = devices.find((d) => d.id === id || d.serialNumber === id);
+  if (found) return found;
+
+  // Fallback for demo ID if searched directly
+  return {
+    id,
+    serialNumber: `NX-CUSTOM-${id}`,
+    model: "NexPhone Enterprise Edge",
+    firmwareVersion: "v2.4.12",
+    status: "online",
+    batteryLevel: 88,
+    lastPingAt: new Date().toISOString(),
+    location: "Global Fleet (Remote)",
+  };
+}
+

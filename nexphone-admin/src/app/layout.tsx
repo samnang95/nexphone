@@ -1,7 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { Sidebar } from "@/components/layout/Sidebar";
-import { Header } from "@/components/layout/Header";
+import { AuthProvider } from "@/context/AuthContext";
+import { AppShell } from "@/components/layout/AppShell";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,16 +35,12 @@ interface RootLayoutProps {
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" className={`dark ${inter.variable} antialiased`}>
-      <body className="min-h-screen bg-slate-950 font-sans text-slate-100">
-        <div className="flex min-h-screen">
-          <Sidebar />
-          <div className="flex flex-1 flex-col">
-            <Header />
-            <div className="flex-1 overflow-y-auto">
-              {children}
-            </div>
-          </div>
-        </div>
+      <body className="min-h-screen bg-slate-950 font-sans text-slate-100 selection:bg-indigo-500/30 selection:text-indigo-200">
+        <AuthProvider>
+          <AppShell>
+            {children}
+          </AppShell>
+        </AuthProvider>
       </body>
     </html>
   );
