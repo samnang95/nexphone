@@ -51,6 +51,15 @@ export const ROUTE_REGISTRY: Record<string, RouteMeta> = {
     badge: "Catalog",
     iconName: "package",
   },
+  brands: {
+    key: "brands",
+    path: ROUTES.BRANDS.ROOT,
+    title: "Brand Management",
+    description: "Manage registered hardware manufacturers, OEM partners, flagship specifications, and enterprise tiers.",
+    category: "Core",
+    badge: "Registry",
+    iconName: "award",
+  },
   devices: {
     key: "devices",
     path: ROUTES.DEVICES.ROOT,
@@ -109,7 +118,8 @@ export const ADMIN_NAV_SECTIONS: readonly NavRouteSection[] = [
     title: "Core",
     items: [
       { title: "Overview", href: ROUTES.HOME, iconName: "layout-dashboard" },
-      { title: "Product Catalog", href: ROUTES.PRODUCTS.ROOT, badge: "New", iconName: "package" },
+      { title: "Product Catalog", href: ROUTES.PRODUCTS.ROOT, badge: "Catalog", iconName: "package" },
+      { title: "Brand Partners", href: ROUTES.BRANDS.ROOT, badge: "Fleet", iconName: "award" },
       { title: "Connected Devices", href: ROUTES.DEVICES.ROOT, badge: "Live", iconName: "smartphone" },
     ],
   },
@@ -153,6 +163,8 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
 
     if (segment === "products") {
       crumbs.push({ label: "Product Management", href: ROUTES.PRODUCTS.ROOT, isCurrent });
+    } else if (segment === "brands") {
+      crumbs.push({ label: "Brand Management", href: ROUTES.BRANDS.ROOT, isCurrent });
     } else if (segment === "devices") {
       crumbs.push({ label: "Connected Devices", href: ROUTES.DEVICES.ROOT, isCurrent });
     } else if (i > 0 && segments[i - 1] === "devices") {
