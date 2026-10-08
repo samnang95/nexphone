@@ -13,6 +13,10 @@ export const ROUTES = {
     ROOT: "/brands",
     DETAIL: (id: string | number) => `/brands/${encodeURIComponent(String(id))}`,
   },
+  INVENTORY: {
+    ROOT: "/inventory",
+    DETAIL: (id: string | number) => `/inventory/${encodeURIComponent(String(id))}`,
+  },
   PROFILE: "/profile",
   DEVICES: {
     ROOT: "/devices",
