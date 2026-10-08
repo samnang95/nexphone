@@ -481,7 +481,7 @@ export function CustomerTable({
               type="button"
               onClick={() => setCurrentPage((p: number) => Math.max(1, p - 1))}
               disabled={validPage <= 1}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 transition-all hover:border-slate-700 hover:bg-slate-800 hover:text-white disabled:opacity-25 disabled:pointer-events-none active:scale-95"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:border-slate-700 hover:bg-slate-800 hover:text-white disabled:opacity-25 disabled:pointer-events-none"
               aria-label="Previous page"
               title="Previous page"
             >
@@ -513,9 +513,9 @@ export function CustomerTable({
                     onClick={() => setCurrentPage(pageNum as number)}
                     aria-current={isSelected ? "page" : undefined}
                     className={cn(
-                      "flex h-8 min-w-[32px] items-center justify-center rounded-lg px-2 text-xs font-mono font-medium transition-all active:scale-95",
+                      "flex h-8 min-w-[32px] items-center justify-center rounded-lg px-2 text-xs font-mono font-medium",
                       isSelected
-                        ? "bg-indigo-600 text-white font-semibold shadow-md shadow-indigo-600/30 border border-indigo-500 ring-1 ring-white/20"
+                        ? "bg-indigo-600 text-white font-semibold border border-indigo-500"
                         : "border border-slate-800 bg-slate-900/80 text-slate-400 hover:border-slate-700 hover:bg-slate-800 hover:text-white"
                     )}
                     aria-label={`Go to page ${pageNum}`}
@@ -531,7 +531,7 @@ export function CustomerTable({
               type="button"
               onClick={() => setCurrentPage((p: number) => Math.min(totalPages, p + 1))}
               disabled={validPage >= totalPages}
-              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 transition-all hover:border-slate-700 hover:bg-slate-800 hover:text-white disabled:opacity-25 disabled:pointer-events-none active:scale-95"
+              className="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-800 bg-slate-900/80 text-slate-400 hover:border-slate-700 hover:bg-slate-800 hover:text-white disabled:opacity-25 disabled:pointer-events-none"
               aria-label="Next page"
               title="Next page"
             >

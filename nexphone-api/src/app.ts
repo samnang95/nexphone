@@ -3573,6 +3573,681 @@ app.get("/api/customers-metrics", (_req: Request, res: Response) => {
   });
 });
 
+// ==========================================
+// REVIEW MANAGEMENT SYSTEM
+// ==========================================
+
+export interface ReviewRecord {
+  id: string;
+  reviewNumber: string;
+  productId: string;
+  productName: string;
+  productSku: string;
+  productBrand: string;
+  productImage?: string;
+  customerId: string;
+  customerName: string;
+  customerEmail: string;
+  customerAvatarUrl?: string;
+  rating: number; // 1-5
+  title: string;
+  comment: string;
+  isVerifiedPurchase: boolean;
+  helpfulVotes: number;
+  unhelpfulVotes: number;
+  status: "published" | "pending" | "flagged" | "rejected";
+  isReported: boolean;
+  reportsCount: number;
+  reports?: {
+    id: string;
+    reporterName: string;
+    reporterEmail?: string;
+    reason: string;
+    comment?: string;
+    reportedAt: string;
+  }[];
+  moderationHistory?: {
+    moderatedBy: string;
+    moderatedAt: string;
+    action: "approved" | "dismissed_flag" | "rejected" | "deleted";
+    reason?: string;
+    note?: string;
+  }[];
+  createdAt: string;
+  updatedAt: string;
+}
+
+const reviewsStore: ReviewRecord[] = [
+  {
+    id: "rev-001",
+    reviewNumber: "REV-9011",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max",
+    productSku: "NX-PRO-MAX-512-SG",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-001",
+    customerName: "Alex Vance",
+    customerEmail: "a.vance@blackmesa.io",
+    rating: 5,
+    title: "Best enterprise grade hardware on the market",
+    comment: "Deployed 20 units across our Black Mesa engineering team. VoIP call clarity is crystal clear over satellite, and the titanium chassis feels virtually indestructible. Battery lasts 2 full business days with heavy telemetry usage.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 34,
+    unhelpfulVotes: 1,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 3).toISOString(),
+  },
+  {
+    id: "rev-002",
+    reviewNumber: "REV-9012",
+    productId: "p2",
+    productName: "NexPhone Enterprise Edge Fleet Pack",
+    productSku: "NX-ENT-EDGE-5PK",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-002",
+    customerName: "Sophia Tanaka",
+    customerEmail: "s.tanaka@cyberdyne.co.jp",
+    rating: 5,
+    title: "Seamless fleet provisioning in Tokyo",
+    comment: "The remote eSIM bulk activation took less than 4 minutes for our entire department. High-bandwidth 5G mmWave connectivity performs flawlessly in Shinjuku and Roppongi. Highly recommended for corporate fleets.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 21,
+    unhelpfulVotes: 0,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
+  },
+  {
+    id: "rev-003",
+    reviewNumber: "REV-9013",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max",
+    productSku: "NX-PRO-MAX-256-SL",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-003",
+    customerName: "Marcus Sterling",
+    customerEmail: "m.sterling@acmeholdings.com",
+    rating: 4,
+    title: "Superb display, slightly heavy charging dock",
+    comment: "The 120Hz ProMotion OLED screen is stunning under direct UK sunlight. The only minor gripe is that the multi-device inductive charger dock is somewhat heavy for frequent international carry-on luggage.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 16,
+    unhelpfulVotes: 2,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 8).toISOString(),
+  },
+  {
+    id: "rev-004",
+    reviewNumber: "REV-9014",
+    productId: "p3",
+    productName: "NexPhone Lite",
+    productSku: "NX-LITE-128-MB",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-099",
+    customerName: "Anonymous Spammer",
+    customerEmail: "free-coupons-bot99@scamdeal.xyz",
+    rating: 1,
+    title: "DO NOT BUY HERE!! GET 90% OFF AT SCAMDEAL.XYZ/NEXPHONE",
+    comment: "Why pay full price when you can get cheap refurbished phones and $500 gift cards by clicking http://scamdeal.xyz/nexphone-promo right now!!! Limited codes available enter code FREE90.",
+    isVerifiedPurchase: false,
+    helpfulVotes: 0,
+    unhelpfulVotes: 48,
+    status: "flagged",
+    isReported: true,
+    reportsCount: 6,
+    reports: [
+      {
+        id: "rep-001",
+        reporterName: "Elena Rostova",
+        reporterEmail: "e.rostova@berlin-tech.de",
+        reason: "spam_promotion",
+        comment: "Obvious phishing and malware URL spam link.",
+        reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString(),
+      },
+      {
+        id: "rep-002",
+        reporterName: "Marcus Sterling",
+        reporterEmail: "m.sterling@acmeholdings.com",
+        reason: "spam_promotion",
+        comment: "Automated bot spam promoting suspicious coupon site.",
+        reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 10).toISOString(),
+      },
+      {
+        id: "rep-003",
+        reporterName: "Alex Vance",
+        reporterEmail: "a.vance@blackmesa.io",
+        reason: "fake_review",
+        comment: "Spam account not a verified purchaser.",
+        reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
+      },
+    ],
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 14).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 4).toISOString(),
+  },
+  {
+    id: "rev-005",
+    reviewNumber: "REV-9015",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max",
+    productSku: "NX-PRO-MAX-512-SG",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-098",
+    customerName: "Raging Troll",
+    customerEmail: "troll_gamer42@trashmail.com",
+    rating: 1,
+    title: "GARBAGE PHONE AND YOU ARE ALL STUPID IDIOTS",
+    comment: "This company is run by absolute morons and clowns. Anyone who buys this should go jump in a ditch and learn a lesson. Worst phone ever made in human history, trash trash trash!",
+    isVerifiedPurchase: false,
+    helpfulVotes: 0,
+    unhelpfulVotes: 62,
+    status: "flagged",
+    isReported: true,
+    reportsCount: 4,
+    reports: [
+      {
+        id: "rep-004",
+        reporterName: "Lucas Meyer",
+        reporterEmail: "l.meyer@zurich-quant.ch",
+        reason: "offensive_language",
+        comment: "Hate speech and personal insults without any product feedback.",
+        reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString(),
+      },
+      {
+        id: "rep-005",
+        reporterName: "Chloe Dubois",
+        reporterEmail: "c.dubois@lyon-biotech.fr",
+        reason: "offensive_language",
+        comment: "Violates community policy against harassment and abusive conduct.",
+        reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 15).toISOString(),
+      },
+    ],
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 20).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 15).toISOString(),
+  },
+  {
+    id: "rev-006",
+    reviewNumber: "REV-9016",
+    productId: "p4",
+    productName: "NexPhone Ultra Fold",
+    productSku: "NX-FOLD-512",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-097",
+    customerName: "Apex Rival Brand Rep",
+    customerEmail: "pr-rival@competitortech.cn",
+    rating: 1,
+    title: "DO NOT BUY! Hinge snapped in half on day 1 and exploded",
+    comment: "The foldable screen crease broke into sharp pieces and literally caught fire in my pocket. Buy Brand X instead, it has better chips and costs half the price. NexPhone is a danger to families.",
+    isVerifiedPurchase: false,
+    helpfulVotes: 1,
+    unhelpfulVotes: 39,
+    status: "flagged",
+    isReported: true,
+    reportsCount: 3,
+    reports: [
+      {
+        id: "rep-006",
+        reporterName: "Astrid Lindholm",
+        reporterEmail: "astrid.l@stockholm-design.se",
+        reason: "competitor_defamation",
+        comment: "Fabricated safety hazard claims by competitor marketing agent.",
+        reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString(),
+      },
+    ],
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 22).toISOString(),
+  },
+  {
+    id: "rev-007",
+    reviewNumber: "REV-9017",
+    productId: "p4",
+    productName: "NexPhone Ultra Fold",
+    productSku: "NX-FOLD-512",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-004",
+    customerName: "Elena Rostova",
+    customerEmail: "e.rostova@berlin-tech.de",
+    rating: 5,
+    title: "The zero-gap hinge engineering is miraculous",
+    comment: "Having used foldable devices from various manufacturers over 4 years, NexPhone's zero-gap hinge and micro-polymer screen layer are completely unmatched. Split-screen multi-tasking runs without lag.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 29,
+    unhelpfulVotes: 1,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 4).toISOString(),
+  },
+  {
+    id: "rev-008",
+    reviewNumber: "REV-9018",
+    productId: "p3",
+    productName: "NexPhone Lite",
+    productSku: "NX-LITE-128-MB",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-005",
+    customerName: "Viktor Novak",
+    customerEmail: "v.novak@prague-cyber.cz",
+    rating: 4,
+    title: "Terrific value for money for field personnel",
+    comment: "Equipped 50 mobile technicians with the Lite edition. The IP68 water resistance held up during heavy rain testing, and the custom encryption chip provides peace of mind for sensitive telemetry logs.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 18,
+    unhelpfulVotes: 0,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
+  },
+  {
+    id: "rev-009",
+    reviewNumber: "REV-9019",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max",
+    productSku: "NX-PRO-MAX-1TB-TI",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-096",
+    customerName: "Doxxing Offender",
+    customerEmail: "leaks_exposer@tempmail.io",
+    rating: 1,
+    title: "Admin personal phone number leaked here",
+    comment: "This company employee lives at 123 Elm St and their direct cell number is 555-0199 call them at 3 AM to demand discounts.",
+    isVerifiedPurchase: false,
+    helpfulVotes: 0,
+    unhelpfulVotes: 75,
+    status: "rejected",
+    isReported: true,
+    reportsCount: 8,
+    reports: [
+      {
+        id: "rep-007",
+        reporterName: "System Guard",
+        reason: "personal_data",
+        comment: "Publishing personally identifiable information (PII).",
+        reportedAt: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(),
+      },
+    ],
+    moderationHistory: [
+      {
+        moderatedBy: "Security Lead",
+        moderatedAt: new Date(Date.now() - 1000 * 60 * 60 * 46).toISOString(),
+        action: "deleted",
+        reason: "Doxxing and PII violation",
+        note: "Content removed immediately under emergency privacy safety policy. IP address permanently blacklisted.",
+      },
+    ],
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 50).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 46).toISOString(),
+  },
+  {
+    id: "rev-010",
+    reviewNumber: "REV-9020",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max",
+    productSku: "NX-PRO-MAX-512-SG",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-016",
+    customerName: "Lucas Meyer",
+    customerEmail: "l.meyer@zurich-quant.ch",
+    rating: 5,
+    title: "Sub-millisecond biometric response and satellite link",
+    comment: "Financial trading telemetry on this phone executes with lowest jitter we have measured. The secure hardware enclave allows rapid biometric authorization without cloud dependency.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 42,
+    unhelpfulVotes: 1,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 6).toISOString(),
+  },
+  {
+    id: "rev-011",
+    reviewNumber: "REV-9021",
+    productId: "p2",
+    productName: "NexPhone Enterprise Edge Fleet Pack",
+    productSku: "NX-ENT-EDGE-5PK",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-018",
+    customerName: "Hassan Al-Mansoor",
+    customerEmail: "hassan@doha-ventures.qa",
+    rating: 5,
+    title: "Exceptional thermal dissipation in high ambient heat",
+    comment: "Tested under 45°C ambient desert conditions in Qatar. No thermal throttling observed during continuous 4K video conferencing and GPS tracking.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 31,
+    unhelpfulVotes: 0,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 9).toISOString(),
+  },
+  {
+    id: "rev-012",
+    reviewNumber: "REV-9022",
+    productId: "p4",
+    productName: "NexPhone Ultra Fold",
+    productSku: "NX-FOLD-512",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-029",
+    customerName: "Zara Chen",
+    customerEmail: "zara.chen@melbourne-health.au",
+    rating: 5,
+    title: "Ideal for healthcare diagnostics and PACS viewer",
+    comment: "The expansive 7.8-inch unfolded canvas allows our clinical radiologists to inspect CT scan slices with remarkable fidelity while on rounds.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 25,
+    unhelpfulVotes: 1,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10).toISOString(),
+  },
+  {
+    id: "rev-013",
+    reviewNumber: "REV-9023",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max",
+    productSku: "NX-PRO-MAX-256-SL",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-033",
+    customerName: "Ananya Patel",
+    customerEmail: "ananya.p@singapore-data.sg",
+    rating: 4,
+    title: "Impressive optics and computational photography",
+    comment: "Low-light night mode and LiDAR depth capture are phenomenal. Camera software UI has minor learning curve but results speak for themselves.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 19,
+    unhelpfulVotes: 2,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 11).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 11).toISOString(),
+  },
+  {
+    id: "rev-014",
+    reviewNumber: "REV-9024",
+    productId: "p3",
+    productName: "NexPhone Lite",
+    productSku: "NX-LITE-128-MB",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-041",
+    customerName: "Emma Watson",
+    customerEmail: "e.watson@oxford-genomics.org",
+    rating: 5,
+    title: "Compact, durable, and highly dependable",
+    comment: "Clean Android enterprise build without bloatware. Clean quarterly security updates and solid build quality make this our standard lab device.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 15,
+    unhelpfulVotes: 0,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 13).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 13).toISOString(),
+  },
+  {
+    id: "rev-015",
+    reviewNumber: "REV-9025",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max",
+    productSku: "NX-PRO-MAX-512-SG",
+    productBrand: "NexPhone Labs",
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=300&q=80",
+    customerId: "cust-047",
+    customerName: "Zoe Kravitz",
+    customerEmail: "zoe.k@amsterdam-creative.nl",
+    rating: 5,
+    title: "Audio recording and stereo microphones are studio quality",
+    comment: "The 3D spatial audio recording handles live concert acoustics without distortion or peaking. Exporting raw ProRes files directly over USB-C 40Gbps is a lifesaver.",
+    isVerifiedPurchase: true,
+    helpfulVotes: 23,
+    unhelpfulVotes: 1,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
+    updatedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 14).toISOString(),
+  },
+];
+
+// GET /api/reviews
+app.get("/api/reviews", (req: Request, res: Response) => {
+  const {
+    search = "",
+    status = "all",
+    rating = "all",
+    reportedOnly = "false",
+    sortBy = "recent",
+  } = req.query as Record<string, string>;
+
+  let results = [...reviewsStore];
+
+  // Search filter
+  if (search.trim()) {
+    const q = search.toLowerCase().trim();
+    results = results.filter(
+      (r) =>
+        r.reviewNumber.toLowerCase().includes(q) ||
+        r.customerName.toLowerCase().includes(q) ||
+        r.customerEmail.toLowerCase().includes(q) ||
+        r.productName.toLowerCase().includes(q) ||
+        r.productSku.toLowerCase().includes(q) ||
+        r.title.toLowerCase().includes(q) ||
+        r.comment.toLowerCase().includes(q)
+    );
+  }
+
+  // Status filter
+  if (status !== "all") {
+    results = results.filter((r) => r.status === status);
+  }
+
+  // Rating filter
+  if (rating !== "all") {
+    const numRating = Number(rating);
+    if (!isNaN(numRating)) {
+      results = results.filter((r) => r.rating === numRating);
+    }
+  }
+
+  // Reported only filter
+  if (reportedOnly === "true") {
+    results = results.filter((r) => r.isReported && r.status !== "rejected");
+  }
+
+  // Sorting
+  if (sortBy === "rating_desc") {
+    results.sort((a, b) => b.rating - a.rating);
+  } else if (sortBy === "rating_asc") {
+    results.sort((a, b) => a.rating - b.rating);
+  } else if (sortBy === "reports_desc") {
+    results.sort((a, b) => b.reportsCount - a.reportsCount);
+  } else if (sortBy === "helpful_desc") {
+    results.sort((a, b) => b.helpfulVotes - a.helpfulVotes);
+  } else {
+    results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  }
+
+  res.json(results);
+});
+
+// GET /api/reviews/:id
+app.get("/api/reviews/:id", (req: Request, res: Response) => {
+  const { id } = req.params;
+  const review = reviewsStore.find((r) => r.id === id || r.reviewNumber === id);
+  if (!review) {
+    res.status(404).json({ error: "Review not found" });
+    return;
+  }
+  res.json(review);
+});
+
+// DELETE /api/reviews/:id (Delete/Reject inappropriate review)
+app.delete("/api/reviews/:id", (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { reason = "Inappropriate content", moderationNote, moderatedBy = "Admin Moderator" } = req.body || {};
+
+  const index = reviewsStore.findIndex((r) => r.id === id || r.reviewNumber === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Review not found" });
+    return;
+  }
+
+  const current = reviewsStore[index]!;
+  const now = new Date().toISOString();
+
+  const moderationEntry = {
+    moderatedBy,
+    moderatedAt: now,
+    action: "deleted" as const,
+    reason,
+    note: moderationNote,
+  };
+
+  const updated: ReviewRecord = {
+    ...current,
+    status: "rejected",
+    isReported: false,
+    moderationHistory: [...(current.moderationHistory || []), moderationEntry],
+    updatedAt: now,
+  };
+
+  reviewsStore[index] = updated;
+  res.json({ message: "Review deleted successfully", review: updated });
+});
+
+// PATCH /api/reviews/:id/status (Change status: published, flagged, rejected)
+app.patch("/api/reviews/:id/status", (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { status, reason, note, moderatedBy = "Admin Moderator" } = req.body || {};
+
+  const index = reviewsStore.findIndex((r) => r.id === id || r.reviewNumber === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Review not found" });
+    return;
+  }
+
+  const current = reviewsStore[index]!;
+  const now = new Date().toISOString();
+
+  const moderationEntry = {
+    moderatedBy,
+    moderatedAt: now,
+    action: (status === "published" ? "approved" : status === "rejected" ? "rejected" : "dismissed_flag") as any,
+    reason,
+    note,
+  };
+
+  const updated: ReviewRecord = {
+    ...current,
+    status,
+    isReported: status === "flagged",
+    moderationHistory: [...(current.moderationHistory || []), moderationEntry],
+    updatedAt: now,
+  };
+
+  reviewsStore[index] = updated;
+  res.json(updated);
+});
+
+// POST /api/reviews/:id/dismiss-report (Dismiss flagged report and keep published)
+app.post("/api/reviews/:id/dismiss-report", (req: Request, res: Response) => {
+  const { id } = req.params;
+  const { note, moderatedBy = "Admin Moderator" } = req.body || {};
+
+  const index = reviewsStore.findIndex((r) => r.id === id || r.reviewNumber === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Review not found" });
+    return;
+  }
+
+  const current = reviewsStore[index]!;
+  const now = new Date().toISOString();
+
+  const moderationEntry = {
+    moderatedBy,
+    moderatedAt: now,
+    action: "dismissed_flag" as const,
+    reason: "Report reviewed and dismissed as compliant with policy",
+    note,
+  };
+
+  const updated: ReviewRecord = {
+    ...current,
+    status: "published",
+    isReported: false,
+    reportsCount: 0,
+    moderationHistory: [...(current.moderationHistory || []), moderationEntry],
+    updatedAt: now,
+  };
+
+  reviewsStore[index] = updated;
+  res.json({ message: "Report dismissed, review restored to published", review: updated });
+});
+
+// GET /api/reviews-metrics
+app.get("/api/reviews-metrics", (_req: Request, res: Response) => {
+  const totalReviews = reviewsStore.length;
+  const publishedCount = reviewsStore.filter((r) => r.status === "published").length;
+  const reportedCount = reviewsStore.filter((r) => r.isReported && r.status !== "rejected").length;
+  const rejectedCount = reviewsStore.filter((r) => r.status === "rejected").length;
+
+  const validRatings = reviewsStore.filter((r) => r.status !== "rejected");
+  const averageRating =
+    validRatings.length > 0
+      ? Number((validRatings.reduce((acc, r) => acc + r.rating, 0) / validRatings.length).toFixed(1))
+      : 5.0;
+
+  const verifiedCount = reviewsStore.filter((r) => r.isVerifiedPurchase).length;
+  const verifiedPurchaseRate = totalReviews > 0 ? Math.round((verifiedCount / totalReviews) * 100) : 100;
+
+  const ratingDistribution = {
+    5: reviewsStore.filter((r) => r.rating === 5).length,
+    4: reviewsStore.filter((r) => r.rating === 4).length,
+    3: reviewsStore.filter((r) => r.rating === 3).length,
+    2: reviewsStore.filter((r) => r.rating === 2).length,
+    1: reviewsStore.filter((r) => r.rating === 1).length,
+  };
+
+  res.json({
+    totalReviews,
+    averageRating,
+    publishedCount,
+    reportedCount,
+    rejectedCount,
+    verifiedPurchaseRate,
+    ratingDistribution,
+  });
+});
+
+
 
 
 
