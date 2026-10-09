@@ -5607,3 +5607,478 @@ app.get("/api/content/metrics", (_req: Request, res: Response) => {
     avgCtr,
   });
 });
+
+// ==========================================
+// NOTIFICATION MANAGEMENT SYSTEM
+// ==========================================
+
+interface NotificationRecord {
+  id: string;
+  title: string;
+  body: string;
+  type: "order" | "promotional" | "announcement" | "system" | "custom";
+  channels: ("push" | "email" | "sms" | "in_app")[];
+  targetAudience: "all" | "enterprise_vip" | "order_customers" | "active_devices" | "custom_segment";
+  status: "sent" | "scheduled" | "draft" | "failed";
+  scheduledAt: string | null;
+  sentAt: string | null;
+  recipientCount: number;
+  deliveryRate: number;
+  openRate: number;
+  clickRate: number;
+  actionUrl?: string;
+  metadata?: {
+    orderId?: string;
+    productId?: string;
+    promoCode?: string;
+    trackingNumber?: string;
+    badge?: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface OrderNotificationTriggerRecord {
+  id: string;
+  event: "order_created" | "order_confirmed" | "order_shipped" | "out_for_delivery" | "order_delivered" | "order_cancelled";
+  title: string;
+  description: string;
+  defaultTemplateTitle: string;
+  defaultTemplateBody: string;
+  enabled: boolean;
+  channels: ("push" | "email" | "sms" | "in_app")[];
+  triggersCount: number;
+  lastTriggeredAt?: string;
+}
+
+const notifNow = Date.now();
+const NOTIF_DAY = 1000 * 60 * 60 * 24;
+
+const notificationsStore: NotificationRecord[] = [
+  {
+    id: "notif-anc-001",
+    title: "🚀 Unveiling NexPhone Fold Ultra",
+    body: "Dual-OLED aerospace hinge, 120Hz micro-bezel displays, and uninterrupted direct-to-satellite voice mesh. Pre-orders are now officially open.",
+    type: "announcement",
+    channels: ["push", "email", "sms", "in_app"],
+    targetAudience: "all",
+    status: "sent",
+    scheduledAt: null,
+    sentAt: new Date(notifNow - 1 * NOTIF_DAY).toISOString(),
+    recipientCount: 29800,
+    deliveryRate: 99.6,
+    openRate: 54.1,
+    clickRate: 23.8,
+    actionUrl: "/products/p4",
+    metadata: { productId: "p4", badge: "New Flagship Drop" },
+    createdAt: new Date(notifNow - 2 * NOTIF_DAY).toISOString(),
+    updatedAt: new Date(notifNow - 1 * NOTIF_DAY).toISOString(),
+  },
+  {
+    id: "notif-ord-001",
+    title: "📦 Order #NX-ORD-9042 Shipped",
+    body: "Your NexPhone 15 Pro Max package has been dispatched via DHL Express (Airway Bill: TRK-1209-7712). Estimated delivery in 2 business days.",
+    type: "order",
+    channels: ["push", "email", "sms"],
+    targetAudience: "order_customers",
+    status: "sent",
+    scheduledAt: null,
+    sentAt: new Date(notifNow - 2 * NOTIF_DAY).toISOString(),
+    recipientCount: 1,
+    deliveryRate: 100,
+    openRate: 85.0,
+    clickRate: 62.5,
+    actionUrl: "/orders/NX-ORD-9042",
+    metadata: { orderId: "NX-ORD-9042", trackingNumber: "TRK-1209-7712" },
+    createdAt: new Date(notifNow - 2 * NOTIF_DAY).toISOString(),
+    updatedAt: new Date(notifNow - 2 * NOTIF_DAY).toISOString(),
+  },
+  {
+    id: "notif-prm-001",
+    title: "⚡ Flash Sale: 20% Off Flagships",
+    body: "Exclusive 48-hour access for verified accounts! Use coupon code FLASH20 at checkout for instant savings across the 15 Pro Max series.",
+    type: "promotional",
+    channels: ["push", "email", "in_app"],
+    targetAudience: "all",
+    status: "sent",
+    scheduledAt: null,
+    sentAt: new Date(notifNow - 3 * NOTIF_DAY).toISOString(),
+    recipientCount: 18450,
+    deliveryRate: 99.2,
+    openRate: 37.8,
+    clickRate: 14.6,
+    actionUrl: "/promotions",
+    metadata: { promoCode: "FLASH20", badge: "20% OFF" },
+    createdAt: new Date(notifNow - 4 * NOTIF_DAY).toISOString(),
+    updatedAt: new Date(notifNow - 3 * NOTIF_DAY).toISOString(),
+  },
+  {
+    id: "notif-ord-002",
+    title: "✅ Order Confirmed: #NX-ORD-9041",
+    body: "Thank you for your order! 5x NexPhone 15 Enterprise Edge devices are being prepared for automated zero-touch provisioning.",
+    type: "order",
+    channels: ["push", "email"],
+    targetAudience: "order_customers",
+    status: "sent",
+    scheduledAt: null,
+    sentAt: new Date(notifNow - 5 * NOTIF_DAY).toISOString(),
+    recipientCount: 1,
+    deliveryRate: 100,
+    openRate: 91.2,
+    clickRate: 40.0,
+    actionUrl: "/orders/NX-ORD-9041",
+    metadata: { orderId: "NX-ORD-9041" },
+    createdAt: new Date(notifNow - 5 * NOTIF_DAY).toISOString(),
+    updatedAt: new Date(notifNow - 5 * NOTIF_DAY).toISOString(),
+  },
+  {
+    id: "notif-prm-002",
+    title: "💼 Trade-In Boost: Up to $800 Fleet Credit",
+    body: "Upgrade your corporate devices before quarter-end and receive boosted valuation credits on all eligible legacy handsets.",
+    type: "promotional",
+    channels: ["email", "in_app"],
+    targetAudience: "enterprise_vip",
+    status: "sent",
+    scheduledAt: null,
+    sentAt: new Date(notifNow - 6 * NOTIF_DAY).toISOString(),
+    recipientCount: 2400,
+    deliveryRate: 98.9,
+    openRate: 46.2,
+    clickRate: 18.5,
+    actionUrl: "/promotions",
+    metadata: { badge: "Enterprise Incentive" },
+    createdAt: new Date(notifNow - 7 * NOTIF_DAY).toISOString(),
+    updatedAt: new Date(notifNow - 6 * NOTIF_DAY).toISOString(),
+  },
+  {
+    id: "notif-anc-002",
+    title: "📸 NexPhone 15 Studio: Now In Stock",
+    body: "Designed for content creators and field engineers with ProRes 4K HDR recording and ultra-low noise audio arrays.",
+    type: "announcement",
+    channels: ["push", "in_app"],
+    targetAudience: "all",
+    status: "sent",
+    scheduledAt: null,
+    sentAt: new Date(notifNow - 8 * NOTIF_DAY).toISOString(),
+    recipientCount: 14200,
+    deliveryRate: 99.1,
+    openRate: 41.5,
+    clickRate: 16.2,
+    actionUrl: "/products/p3",
+    metadata: { productId: "p3", badge: "In Stock" },
+    createdAt: new Date(notifNow - 9 * NOTIF_DAY).toISOString(),
+    updatedAt: new Date(notifNow - 8 * NOTIF_DAY).toISOString(),
+  },
+  {
+    id: "notif-prm-003",
+    title: "🛰 Complimentary Satellite VoIP 1-Year Trial",
+    body: "Receive 1 full year of complimentary Global Satellite VoIP connectivity with any fleet order over 10 units.",
+    type: "promotional",
+    channels: ["push", "email"],
+    targetAudience: "enterprise_vip",
+    status: "scheduled",
+    scheduledAt: new Date(notifNow + 3 * NOTIF_DAY).toISOString(),
+    sentAt: null,
+    recipientCount: 3100,
+    deliveryRate: 0,
+    openRate: 0,
+    clickRate: 0,
+    actionUrl: "/promotions",
+    metadata: { badge: "Satellite Bundle" },
+    createdAt: new Date(notifNow - 1 * NOTIF_DAY).toISOString(),
+    updatedAt: new Date(notifNow).toISOString(),
+  },
+  {
+    id: "notif-ord-003",
+    title: "📬 Shipment Delivered: #NX-ORD-9040",
+    body: "Your shipment has been securely delivered to your enterprise receiving dock. Digital warranty care is now active.",
+    type: "order",
+    channels: ["push", "in_app"],
+    targetAudience: "order_customers",
+    status: "sent",
+    scheduledAt: null,
+    sentAt: new Date(notifNow - 9 * NOTIF_DAY).toISOString(),
+    recipientCount: 1,
+    deliveryRate: 100,
+    openRate: 88.0,
+    clickRate: 25.0,
+    actionUrl: "/orders/NX-ORD-9040",
+    metadata: { orderId: "NX-ORD-9040" },
+    createdAt: new Date(notifNow - 9 * NOTIF_DAY).toISOString(),
+    updatedAt: new Date(notifNow - 9 * NOTIF_DAY).toISOString(),
+  },
+];
+
+const orderNotificationTriggersStore: OrderNotificationTriggerRecord[] = [
+  {
+    id: "trig-001",
+    event: "order_created",
+    title: "Order Placed & Awaiting Payment",
+    description: "Dispatched immediately upon checkout completion.",
+    defaultTemplateTitle: "Order Confirmed: #{order_id}",
+    defaultTemplateBody: "Hi {customer_name}, we received your order of {item_count} items. We are processing your hardware reservation.",
+    enabled: true,
+    channels: ["email", "in_app"],
+    triggersCount: 1248,
+    lastTriggeredAt: new Date(notifNow - 1000 * 60 * 35).toISOString(),
+  },
+  {
+    id: "trig-002",
+    event: "order_confirmed",
+    title: "Payment & Order Verified",
+    description: "Triggered once payment gateway acknowledges charge.",
+    defaultTemplateTitle: "Payment Verified for #{order_id}",
+    defaultTemplateBody: "Your payment of {amount} has cleared. Your units have been queued for automated staging.",
+    enabled: true,
+    channels: ["email", "push"],
+    triggersCount: 1190,
+    lastTriggeredAt: new Date(notifNow - 1000 * 60 * 45).toISOString(),
+  },
+  {
+    id: "trig-003",
+    event: "order_shipped",
+    title: "Dispatched with Carrier Tracking",
+    description: "Sent as soon as warehouse scans airway bill.",
+    defaultTemplateTitle: "Your NexPhone Order is On The Way! ({tracking_number})",
+    defaultTemplateBody: "Shipment dispatched via {carrier}. Track your live delivery: {tracking_url}",
+    enabled: true,
+    channels: ["push", "email", "sms"],
+    triggersCount: 942,
+    lastTriggeredAt: new Date(notifNow - 1000 * 60 * 120).toISOString(),
+  },
+  {
+    id: "trig-004",
+    event: "out_for_delivery",
+    title: "Out for Final Mile Delivery",
+    description: "Local driver has loaded parcel into delivery vehicle.",
+    defaultTemplateTitle: "Out for Delivery Today: #{order_id}",
+    defaultTemplateBody: "Your courier will deliver your package today before 6:00 PM. Signature required.",
+    enabled: true,
+    channels: ["push", "sms"],
+    triggersCount: 885,
+    lastTriggeredAt: new Date(notifNow - 1000 * 60 * 180).toISOString(),
+  },
+  {
+    id: "trig-005",
+    event: "order_delivered",
+    title: "Shipment Delivered",
+    description: "Courier confirms successful drop-off at destination.",
+    defaultTemplateTitle: "Delivered: Order #{order_id}",
+    defaultTemplateBody: "Your NexPhone package has been delivered. Welcome to the NexPhone ecosystem!",
+    enabled: true,
+    channels: ["push", "in_app", "email"],
+    triggersCount: 852,
+    lastTriggeredAt: new Date(notifNow - 1000 * 60 * 240).toISOString(),
+  },
+  {
+    id: "trig-006",
+    event: "order_cancelled",
+    title: "Order Cancelled or Refunded",
+    description: "Sent when an order is cancelled or refunded.",
+    defaultTemplateTitle: "Refund Notice: Order #{order_id}",
+    defaultTemplateBody: "Your cancellation request has been executed and a full refund of {amount} has been initiated.",
+    enabled: false,
+    channels: ["email"],
+    triggersCount: 41,
+    lastTriggeredAt: new Date(notifNow - 1000 * 60 * 60 * 24 * 4).toISOString(),
+  },
+];
+
+// --- Notifications REST APIs ---
+app.get("/api/notifications", (req: Request, res: Response) => {
+  const type = req.query.type ? String(req.query.type) : undefined;
+  const status = req.query.status ? String(req.query.status) : undefined;
+  const search = req.query.search ? String(req.query.search).toLowerCase() : undefined;
+
+  let results = [...notificationsStore];
+
+  if (type && type !== "all") {
+    results = results.filter((n) => n.type === type);
+  }
+  if (status && status !== "all") {
+    results = results.filter((n) => n.status === status);
+  }
+  if (search) {
+    results = results.filter(
+      (n) =>
+        n.title.toLowerCase().includes(search) ||
+        n.body.toLowerCase().includes(search) ||
+        (n.metadata?.orderId && n.metadata.orderId.toLowerCase().includes(search)) ||
+        (n.metadata?.promoCode && n.metadata.promoCode.toLowerCase().includes(search))
+    );
+  }
+
+  // Sort by most recent
+  results.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+  res.json(results);
+});
+
+app.post("/api/notifications/send", (req: Request, res: Response) => {
+  const body = req.body || {};
+  if (!body.title || !body.body) {
+    res.status(400).json({ error: "Notification title and body are required." });
+    return;
+  }
+
+  const isScheduled = Boolean(body.scheduleTime);
+  const now = new Date().toISOString();
+
+  // Audience size calculation mockup
+  let recipientCount = 1;
+  if (body.targetAudience === "all") recipientCount = 28400;
+  else if (body.targetAudience === "enterprise_vip") recipientCount = 3200;
+  else if (body.targetAudience === "order_customers") recipientCount = 4850;
+  else if (body.targetAudience === "active_devices") recipientCount = 12600;
+  else recipientCount = 850;
+
+  const newRecord: NotificationRecord = {
+    id: `notif-${Date.now().toString(36)}`,
+    title: String(body.title).trim(),
+    body: String(body.body).trim(),
+    type: body.type || "custom",
+    channels: Array.isArray(body.channels) && body.channels.length > 0 ? body.channels : ["push"],
+    targetAudience: body.targetAudience || "all",
+    status: isScheduled ? "scheduled" : "sent",
+    scheduledAt: isScheduled ? new Date(body.scheduleTime).toISOString() : null,
+    sentAt: isScheduled ? null : now,
+    recipientCount,
+    deliveryRate: isScheduled ? 0 : 99.4,
+    openRate: isScheduled ? 0 : Number((35 + Math.random() * 20).toFixed(1)),
+    clickRate: isScheduled ? 0 : Number((10 + Math.random() * 15).toFixed(1)),
+    actionUrl: body.actionUrl ? String(body.actionUrl).trim() : undefined,
+    metadata: body.metadata,
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  notificationsStore.unshift(newRecord);
+  res.status(201).json(newRecord);
+});
+
+app.put("/api/notifications/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = notificationsStore.findIndex((n) => n.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Notification not found" });
+    return;
+  }
+
+  const current = notificationsStore[index]!;
+  const body = req.body || {};
+  const updated: NotificationRecord = {
+    ...current,
+    title: body.title !== undefined ? String(body.title).trim() : current.title,
+    body: body.body !== undefined ? String(body.body).trim() : current.body,
+    channels: body.channels || current.channels,
+    targetAudience: body.targetAudience || current.targetAudience,
+    actionUrl: body.actionUrl !== undefined ? body.actionUrl : current.actionUrl,
+    metadata: body.metadata !== undefined ? body.metadata : current.metadata,
+    status: body.status || current.status,
+    scheduledAt: body.scheduleTime !== undefined ? (body.scheduleTime ? new Date(body.scheduleTime).toISOString() : null) : current.scheduledAt,
+    updatedAt: new Date().toISOString(),
+  };
+
+  notificationsStore[index] = updated;
+  res.json(updated);
+});
+
+app.delete("/api/notifications/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = notificationsStore.findIndex((n) => n.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Notification not found" });
+    return;
+  }
+  const [deleted] = notificationsStore.splice(index, 1);
+  res.json({ message: "Notification deleted", item: deleted });
+});
+
+app.post("/api/notifications/:id/resend", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const found = notificationsStore.find((n) => n.id === id);
+  if (!found) {
+    res.status(404).json({ error: "Notification not found" });
+    return;
+  }
+
+  const now = new Date().toISOString();
+  const resentRecord: NotificationRecord = {
+    ...found,
+    id: `notif-${Date.now().toString(36)}`,
+    status: "sent",
+    sentAt: now,
+    scheduledAt: null,
+    deliveryRate: 99.5,
+    openRate: Number((35 + Math.random() * 20).toFixed(1)),
+    clickRate: Number((10 + Math.random() * 15).toFixed(1)),
+    createdAt: now,
+    updatedAt: now,
+  };
+
+  notificationsStore.unshift(resentRecord);
+  res.status(201).json(resentRecord);
+});
+
+// --- Order Notification Trigger Automation APIs ---
+app.get("/api/notifications/triggers", (_req: Request, res: Response) => {
+  res.json(orderNotificationTriggersStore);
+});
+
+app.put("/api/notifications/triggers/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = orderNotificationTriggersStore.findIndex((t) => t.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Trigger not found" });
+    return;
+  }
+
+  const current = orderNotificationTriggersStore[index]!;
+  const body = req.body || {};
+  const updated: OrderNotificationTriggerRecord = {
+    ...current,
+    enabled: body.enabled !== undefined ? Boolean(body.enabled) : current.enabled,
+    channels: body.channels || current.channels,
+    defaultTemplateTitle: body.defaultTemplateTitle || current.defaultTemplateTitle,
+    defaultTemplateBody: body.defaultTemplateBody || current.defaultTemplateBody,
+  };
+
+  orderNotificationTriggersStore[index] = updated;
+  res.json(updated);
+});
+
+// --- Summary Metrics API ---
+app.get("/api/notifications/metrics", (_req: Request, res: Response) => {
+  const sentNotifications = notificationsStore.filter((n) => n.status === "sent");
+  const totalSent = sentNotifications.length;
+
+  const avgDeliveryRate =
+    totalSent > 0
+      ? Number((sentNotifications.reduce((acc, n) => acc + (n.deliveryRate || 0), 0) / totalSent).toFixed(1))
+      : 99.4;
+
+  const avgOpenRate =
+    totalSent > 0
+      ? Number((sentNotifications.reduce((acc, n) => acc + (n.openRate || 0), 0) / totalSent).toFixed(1))
+      : 42.5;
+
+  const avgClickRate =
+    totalSent > 0
+      ? Number((sentNotifications.reduce((acc, n) => acc + (n.clickRate || 0), 0) / totalSent).toFixed(1))
+      : 15.8;
+
+  const totalOrderAlerts = notificationsStore.filter((n) => n.type === "order").length;
+  const totalPromotionalSent = notificationsStore.filter((n) => n.type === "promotional").length;
+  const totalAnnouncementsSent = notificationsStore.filter((n) => n.type === "announcement").length;
+  const activeAutomationsCount = orderNotificationTriggersStore.filter((t) => t.enabled).length;
+
+  res.json({
+    totalSent,
+    avgDeliveryRate,
+    avgOpenRate,
+    avgClickRate,
+    totalOrderAlerts,
+    totalPromotionalSent,
+    totalAnnouncementsSent,
+    activeAutomationsCount,
+  });
+});

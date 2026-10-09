@@ -36,6 +36,9 @@ export const ROUTES = {
   CONTENT: {
     ROOT: "/content",
   },
+  NOTIFICATIONS: {
+    ROOT: "/notifications",
+  },
   PROFILE: "/profile",
   DEVICES: {
     ROOT: "/devices",
