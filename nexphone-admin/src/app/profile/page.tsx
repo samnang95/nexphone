@@ -1,347 +1,411 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
-import { Breadcrumbs } from "@/components/layout/Breadcrumbs";
+import { profileService } from "@/services/profile.service";
+import { ProfileHeader } from "@/components/profile/ProfileHeader";
+import { ProfileOverviewCard } from "@/components/profile/ProfileOverviewCard";
+import { EditProfileModal } from "@/components/profile/EditProfileModal";
+import { ChangePasswordModal } from "@/components/profile/ChangePasswordModal";
+import { LogoutConfirmationModal } from "@/components/profile/LogoutConfirmationModal";
+import { ActiveSessionsManager } from "@/components/profile/ActiveSessionsManager";
+import { SecurityAuditTrail } from "@/components/profile/SecurityAuditTrail";
+import { ClusterSettingsForm } from "@/components/profile/ClusterSettingsForm";
+import type {
+  AdminProfile,
+  ProfileTab,
+  UpdateProfilePayload,
+  ChangePasswordPayload,
+  AdminSession,
+  AdminSecurityAuditLog,
+  ClusterSettings,
+} from "@/types/profile";
+
+const FALLBACK_LAST_PASSWORD_CHANGE_AT = "2026-09-25T08:00:00.000Z";
+const FALLBACK_LAST_LOGIN_AT = "2026-10-09T08:00:00.000Z";
 
 export default function ProfilePage() {
-  const { user, updateProfile, logout } = useAuth();
+  const { user, updateProfile: updateAuthProfile, logout: authLogout } = useAuth();
 
-  const [name, setName] = useState(user?.name || "System Admin");
-  const [email, setEmail] = useState(user?.email || "admin@nexphone.io");
-  const [department, setDepartment] = useState(user?.department || "Global Infrastructure & Core Platform");
-  const [phone, setPhone] = useState(user?.phone || "+1 (555) 019-2834");
-  const [timezone, setTimezone] = useState(user?.timezone || "America/Los_Angeles (UTC-7)");
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
-  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
-  const [tokenCopied, setTokenCopied] = useState(false);
+  const [activeTab, setActiveTab] = useState<ProfileTab>("overview");
+  const [profile, setProfile] = useState<AdminProfile>({
+    id: user?.id || "usr-001",
+    name: user?.name || "System Admin",
+    email: user?.email || "admin@nexphone.io",
+    role: "Super Administrator",
+    department: user?.department || "Global Infrastructure & Core Platform",
+    phone: user?.phone || "+1 (555) 019-2834",
+    timezone: user?.timezone || "America/Los_Angeles (UTC-7)",
+    bio: "Lead Systems & Infrastructure Architect overseeing satellite VoIP backbones and secure hardware enclave deployments.",
+    avatarPreset: "cyber_shield",
+    twoFactorEnabled: true,
+    twoFactorMethod: "FIDO2 WebAuthn",
+    apiKeyPreview: user?.apiKeyPreview || "nx_live_998a4...7d2e",
+    securityLevel: "Tier 1 Root",
+    lastLoginAt: user?.lastLoginAt || FALLBACK_LAST_LOGIN_AT,
+    lastPasswordChangeAt: FALLBACK_LAST_PASSWORD_CHANGE_AT,
+    hardwareEnclaveId: "ENC-TITAN-X9-8804",
+  });
 
-  const handleSaveProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSaving(true);
-    await updateProfile({
-      name,
-      email,
-      department,
-      phone,
-      timezone,
+  const [sessions, setSessions] = useState<AdminSession[]>([]);
+  const [auditLogs, setAuditLogs] = useState<AdminSecurityAuditLog[]>([]);
+  const [settings, setSettings] = useState<ClusterSettings>({
+    flavor: "development",
+    heartbeatTimeoutSec: 30,
+    mediaIngestionRate: "realtime",
+    incidentWebhookUrl: "https://hooks.slack.com/services/T00/B00/nexphone-alerts",
+    autoLockMinutes: 15,
+    enforceHardware2FA: true,
+    allowSubnetCIDR: "192.168.0.0/16, 10.240.0.0/16",
+    notifyOnNewLogin: true,
+  });
+
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [passwordModalOpen, setPasswordModalOpen] = useState(false);
+  const [logoutModalOpen, setLogoutModalOpen] = useState(false);
+  const [isRotatingToken, setIsRotatingToken] = useState(false);
+  const [toastMessage, setToastMessage] = useState<{
+    text: string;
+    variant: "success" | "warn" | "error";
+  } | null>(null);
+
+  const showToast = useCallback(
+    (text: string, variant: "success" | "warn" | "error" = "success") => {
+      setToastMessage({ text, variant });
+      setTimeout(() => setToastMessage(null), 3500);
+    },
+    []
+  );
+
+  // Fetch initial profile & security state
+  useEffect(() => {
+    let isMounted = true;
+    profileService.getProfile().then((data) => {
+      if (!isMounted) return;
+      setProfile((prev) => ({
+        ...prev,
+        ...data.profile,
+        name: user?.name || data.profile.name,
+        email: user?.email || data.profile.email,
+      }));
+      setSessions(data.sessions);
+      setAuditLogs(data.auditLogs);
+      setSettings(data.settings);
     });
-    setIsSaving(false);
-    setSaveSuccess(true);
-    setTimeout(() => setSaveSuccess(false), 3000);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user]);
+
+  // Edit profile handler
+  const handleSaveProfile = async (payload: UpdateProfilePayload) => {
+    const updated = await profileService.updateProfile(payload);
+    setProfile(updated);
+    await updateAuthProfile({
+      name: updated.name,
+      email: updated.email,
+      department: updated.department,
+      phone: updated.phone,
+      timezone: updated.timezone,
+    });
+    showToast("Profile identity attributes updated successfully.");
   };
 
-  const handleCopyToken = () => {
-    navigator.clipboard?.writeText(user?.apiKeyPreview || "nx_live_998a4bc7102e");
-    setTokenCopied(true);
-    setTimeout(() => setTokenCopied(false), 2000);
+  // Change password handler
+  const handleChangePassword = async (payload: ChangePasswordPayload) => {
+    const res = await profileService.changePassword(payload);
+    setProfile((prev) => ({
+      ...prev,
+      lastPasswordChangeAt: res.lastPasswordChangeAt,
+    }));
+    // Refresh audit logs
+    const refreshedLogs = await profileService.getAuditLogs();
+    setAuditLogs(refreshedLogs);
+    showToast(res.message);
   };
+
+  // Rotate token handler
+  const handleRotateToken = async () => {
+    try {
+      setIsRotatingToken(true);
+      const res = await profileService.rotateToken();
+      setProfile((prev) => ({
+        ...prev,
+        apiKeyPreview: res.apiKeyPreview,
+      }));
+      const refreshedLogs = await profileService.getAuditLogs();
+      setAuditLogs(refreshedLogs);
+      showToast("Administrative API token rotated successfully.");
+    } finally {
+      setIsRotatingToken(false);
+    }
+  };
+
+  // Revoke single session
+  const handleRevokeSession = async (id: string) => {
+    const updatedSessions = await profileService.revokeSession(id);
+    setSessions(updatedSessions);
+    const refreshedLogs = await profileService.getAuditLogs();
+    setAuditLogs(refreshedLogs);
+    showToast("Remote terminal session revoked.", "warn");
+  };
+
+  // Revoke other sessions
+  const handleRevokeOthers = async () => {
+    const updatedSessions = await profileService.revokeOtherSessions();
+    setSessions(updatedSessions);
+    const refreshedLogs = await profileService.getAuditLogs();
+    setAuditLogs(refreshedLogs);
+    showToast("All other remote stations have been disconnected.", "warn");
+  };
+
+  // Logout handler
+  const handleConfirmLogout = async (revokeOtherSessions: boolean) => {
+    if (revokeOtherSessions) {
+      await profileService.revokeOtherSessions();
+    }
+    await profileService.logout();
+    setLogoutModalOpen(false);
+    authLogout();
+  };
+
+  // Save cluster settings
+  const handleSaveSettings = async (updatedSettings: Partial<ClusterSettings>) => {
+    const res = await profileService.updateClusterSettings(updatedSettings);
+    setSettings(res);
+    const refreshedLogs = await profileService.getAuditLogs();
+    setAuditLogs(refreshedLogs);
+    showToast("Cluster settings and policies updated.");
+  };
+
+  const remoteSessionsCount = sessions.filter((s) => !s.current).length;
 
   return (
-    <div className="space-y-4 sm:space-y-6 p-4 sm:p-6 md:p-8">
-      <Breadcrumbs />
+    <div className="space-y-6 p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
+      {/* Header with Sub-tabs and CTAs */}
+      <ProfileHeader
+        profile={profile}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        onEditProfile={() => setEditModalOpen(true)}
+        onChangePassword={() => setPasswordModalOpen(true)}
+        onLogout={() => setLogoutModalOpen(true)}
+        sessionsCount={sessions.length}
+      />
 
-      {/* Header */}
-      <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-        <div>
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight text-white">
-              Admin Profile & Access
-            </h1>
-            <Badge variant="success">Active Session</Badge>
-          </div>
-          <p className="mt-1 text-xs sm:text-sm text-slate-400">
-            Administrative identity, cryptographic credentials, and multi-factor hardware policies.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-          <Button
-            variant="danger"
-            size="sm"
-            onClick={() => setShowLogoutConfirm(true)}
-          >
-            Sign Out
-          </Button>
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={handleSaveProfile}
-            disabled={isSaving}
-          >
-            {isSaving ? "Saving..." : "Save Changes"}
-          </Button>
-        </div>
-      </div>
-
-      {saveSuccess && (
-        <div className="rounded-lg border border-emerald-500/30 bg-emerald-950/40 p-3 text-xs text-emerald-300 flex items-center justify-between">
+      {/* Floating Toast Notification */}
+      {toastMessage && (
+        <div
+          className={`flex items-center justify-between rounded-xl border p-3.5 text-xs font-semibold shadow-2xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2 duration-200 ${
+            toastMessage.variant === "success"
+              ? "border-emerald-500/40 bg-emerald-950/80 text-emerald-300"
+              : toastMessage.variant === "warn"
+              ? "border-amber-500/40 bg-amber-950/80 text-amber-300"
+              : "border-rose-500/40 bg-rose-950/80 text-rose-300"
+          }`}
+        >
           <div className="flex items-center gap-2">
-            <span>✓</span>
-            <span>Profile settings updated and committed successfully.</span>
-          </div>
-        </div>
-      )}
-
-      {/* Profile Overview Card & Form */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Left: Identity Card */}
-        <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-sm space-y-6">
-          <div className="flex flex-col items-center text-center">
-            <div className="relative mb-3">
-              <div className="flex h-20 w-20 items-center justify-center rounded-full bg-gradient-to-tr from-indigo-600 to-blue-500 text-2xl font-bold text-white shadow-xl ring-4 ring-indigo-500/20">
-                {name.slice(0, 2).toUpperCase()}
-              </div>
-              <span className="absolute bottom-0 right-0 h-4 w-4 rounded-full bg-emerald-500 ring-2 ring-slate-950" />
-            </div>
-
-            <h2 className="text-lg font-bold text-white">{name}</h2>
-            <span className="text-xs text-slate-400 font-mono">{email}</span>
-
-            <div className="mt-3">
-              <Badge variant="default">
-                {user?.role || "Super Administrator"}
-              </Badge>
-            </div>
-          </div>
-
-          <div className="border-t border-slate-800 pt-4 space-y-3 font-mono text-xs">
-            <div className="flex justify-between">
-              <span className="text-slate-400 font-sans">Admin ID:</span>
-              <span className="text-slate-200">{user?.id || "usr-001"}</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400 font-sans">Role Level:</span>
-              <span className="text-indigo-400 font-sans font-semibold">Tier 1 Root</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400 font-sans">2FA Security:</span>
-              <span className="text-emerald-400 font-sans font-semibold">FIDO2 WebAuthn</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-slate-400 font-sans">Last Login:</span>
-              <span className="text-slate-300">Just now</span>
-            </div>
-          </div>
-
-          <div className="border-t border-slate-800 pt-4">
-            <button
-              type="button"
-              onClick={() => setShowLogoutConfirm(true)}
-              className="w-full rounded-lg border border-rose-500/30 bg-rose-950/20 px-3 py-2 text-xs font-semibold text-rose-300 hover:bg-rose-900/40 transition-colors"
-            >
-              Terminate Current Session
-            </button>
-          </div>
-        </div>
-
-        {/* Right: Personal Info & Security Credentials */}
-        <div className="space-y-6 lg:col-span-2">
-          {/* Personal Info Form */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-sm">
-            <h2 className="text-base font-semibold text-white mb-1">Personal & Work Profile</h2>
-            <p className="text-xs text-slate-400 mb-6">Manage how you are identified across admin audit events</p>
-
-            <form onSubmit={handleSaveProfile} className="space-y-4 text-sm">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Department / Division
-                  </label>
-                  <input
-                    type="text"
-                    value={department}
-                    onChange={(e) => setDepartment(e.target.value)}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                    Emergency Phone (SMS OTP)
-                  </label>
-                  <input
-                    type="text"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none font-mono"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-xs font-medium text-slate-300 mb-1.5">
-                  Operating Timezone
-                </label>
-                <input
-                  type="text"
-                  value={timezone}
-                  onChange={(e) => setTimezone(e.target.value)}
-                  className="w-full rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-sm text-white focus:border-indigo-500 focus:outline-none"
-                />
-              </div>
-            </form>
-          </div>
-
-          {/* Security Credentials & API Token */}
-          <div className="rounded-xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-sm space-y-5">
-            <div>
-              <h2 className="text-base font-semibold text-white mb-1">Administrative API Token</h2>
-              <p className="text-xs text-slate-400">Personal access key for CLI automation & direct gateway queries</p>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <input
-                type="text"
-                readOnly
-                value="nx_live_998a4bc7102e88a01174d"
-                className="flex-1 rounded-lg border border-slate-800 bg-slate-950 px-3 py-2 text-xs font-mono text-slate-300 select-all"
-              />
-              <Button variant="secondary" size="sm" onClick={handleCopyToken}>
-                {tokenCopied ? "Copied!" : "Copy Token"}
-              </Button>
-              <Button variant="secondary" size="sm">
-                Rotate
-              </Button>
-            </div>
-
-            <div className="border-t border-slate-800 pt-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-sm font-semibold text-white">Password & Enclave Credential</h3>
-                  <p className="text-xs text-slate-400">Last changed 14 days ago</p>
-                </div>
-                <Button variant="secondary" size="sm">
-                  Change Password
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Active Administrative Sessions */}
-      <div className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/60 shadow-sm backdrop-blur-sm">
-        <div className="border-b border-slate-800 bg-slate-950/40 px-6 py-4 flex items-center justify-between">
-          <div>
-            <h2 className="text-sm font-semibold text-white">Active Management Sessions</h2>
-            <p className="text-xs text-slate-400">Terminals currently authorized with your admin profile</p>
+            <span>
+              {toastMessage.variant === "success"
+                ? "✓"
+                : toastMessage.variant === "warn"
+                ? "⚠"
+                : "✕"}
+            </span>
+            <span>{toastMessage.text}</span>
           </div>
           <button
             type="button"
-            onClick={() => setShowLogoutConfirm(true)}
-            className="text-xs font-semibold text-rose-400 hover:text-rose-300 transition-colors"
+            onClick={() => setToastMessage(null)}
+            className="text-slate-400 hover:text-white ml-4"
           >
-            Revoke All Other Sessions
+            ✕
           </button>
         </div>
+      )}
 
-        <div className="divide-y divide-slate-800/60 text-xs">
-          <div className="flex items-center justify-between px-6 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-indigo-950/80 border border-indigo-500/30 text-indigo-400">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M9 17.25v1.007a3 3 0 0 1-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0 1 15 18.257V17.25m6-12V15a2.25 2.25 0 0 1-2.25 2.25H5.25A2.25 2.25 0 0 1 3 15V5.25m18 0A2.25 2.25 0 0 0 18.75 3H5.25A2.25 2.25 0 0 0 3 5.25m18 0H3" />
-                </svg>
-              </div>
-              <div>
-                <span className="font-semibold text-white block">macOS Chrome 134 • Current Session</span>
-                <span className="text-slate-400 font-mono">192.168.1.104 • San Francisco, CA</span>
-              </div>
-            </div>
-            <Badge variant="success">Active Now</Badge>
-          </div>
-
-          <div className="flex items-center justify-between px-6 py-3.5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-800 text-slate-400">
-                <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M10.5 1.5H8.25A2.25 2.25 0 0 0 6 3.75v16.5a2.25 2.25 0 0 0 2.25 2.25h7.5A2.25 2.25 0 0 0 18 20.25V3.75a2.25 2.25 0 0 0-2.25-2.25H13.5m-3 0V3h3V1.5m-3 0h3m-3 18.75h3" />
-                </svg>
-              </div>
-              <div>
-                <span className="font-semibold text-white block">NexPhone Pro Max X (Mobile Console)</span>
-                <span className="text-slate-400 font-mono">10.240.12.84 • WireGuard Internal</span>
-              </div>
-            </div>
-            <button className="text-slate-400 hover:text-rose-400 transition-colors">
-              Revoke
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Logout Confirmation Modal */}
-      {showLogoutConfirm && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 animate-in fade-in">
-          <div className="w-full max-w-sm rounded-xl border border-slate-800 bg-slate-900 p-6 shadow-2xl space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="flex h-10 w-10 items-center justify-center rounded-full bg-rose-500/20 text-rose-400 border border-rose-500/30">
-                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="text-base font-bold text-white">Sign Out of Console?</h3>
-                <p className="text-xs text-slate-400">You will need your password to log back in.</p>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-300">
-              Your terminal credentials and local hardware enclave tokens will be safely cleared.
-            </p>
-
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setShowLogoutConfirm(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => {
-                  setShowLogoutConfirm(false);
-                  logout();
-                }}
-              >
-                Confirm Sign Out
-              </Button>
-            </div>
-          </div>
+      {/* Active Tab View */}
+      {activeTab === "overview" && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <ProfileOverviewCard
+            profile={profile}
+            onEditProfile={() => setEditModalOpen(true)}
+            onChangePassword={() => setPasswordModalOpen(true)}
+            onRotateToken={handleRotateToken}
+            isRotatingToken={isRotatingToken}
+            activeSessionsCount={sessions.length}
+          />
+          <SecurityAuditTrail logs={auditLogs.slice(0, 5)} />
         </div>
       )}
+
+      {activeTab === "security" && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+            {/* Password Credentials Card */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl shadow-lg space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-600/20 text-amber-400 border border-amber-500/30">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.75 5.25a3 3 0 0 1 3 3m3 0a6 6 0 0 1-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1 1 21.75 8.25Z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Password & Enclave Master</h3>
+                  <p className="text-xs text-slate-400">Argon2id Master Authorization</p>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Password Status:</span>
+                  <span className="text-emerald-400 font-semibold">Active & Healthy</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Last Changed:</span>
+                  <span className="text-slate-300 font-mono">
+                    {new Date(profile.lastPasswordChangeAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-slate-400">Complexity:</span>
+                  <span className="text-indigo-400 font-semibold">Very High (16+ Entropy)</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setPasswordModalOpen(true)}
+                className="w-full rounded-lg bg-amber-600 px-4 py-2 text-xs font-semibold text-white hover:bg-amber-500 shadow-md shadow-amber-600/30 transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span>Change Master Password</span>
+              </button>
+            </div>
+
+            {/* Hardware 2FA & FIDO2 Card */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl shadow-lg space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-600/20 text-emerald-400 border border-emerald-500/30">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">Multi-Factor Enclave</h3>
+                  <p className="text-xs text-slate-400">Hardware Bound Authentication</p>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Primary Method:</span>
+                  <span className="text-emerald-400 font-semibold">{profile.twoFactorMethod}</span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Enclave Chip:</span>
+                  <span className="text-slate-300 font-mono">{profile.hardwareEnclaveId}</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-slate-400">Emergency SMS Fallback:</span>
+                  <span className="text-slate-300 font-mono">{profile.phone}</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => showToast("Hardware security token challenge verified.")}
+                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-xs font-semibold text-slate-300 hover:border-slate-700 hover:text-white transition-colors"
+              >
+                Verify Hardware Enclave Token
+              </button>
+            </div>
+
+            {/* API Access Tokens Card */}
+            <div className="rounded-2xl border border-slate-800 bg-slate-900/60 p-6 backdrop-blur-xl shadow-lg space-y-4">
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-indigo-600/20 text-indigo-400 border border-indigo-500/30">
+                  <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.25 9.75v-4.5m0 4.5h4.5m-4.5 0 6-6m-3 18c-8.284 0-15-6.716-15-15V4.5A2.25 2.25 0 0 1 4.5 2.25h4.5a2.25 2.25 0 0 1 2.25 2.25v4.5A2.25 2.25 0 0 1 9 11.25H4.5m15 0a2.25 2.25 0 0 0 2.25-2.25V4.5a2.25 2.25 0 0 0-2.25-2.25h-4.5" />
+                  </svg>
+                </div>
+                <div>
+                  <h3 className="text-sm font-bold text-white">API Gateway Token</h3>
+                  <p className="text-xs text-slate-400">Headless API & CLI Integration</p>
+                </div>
+              </div>
+
+              <div className="space-y-2 text-xs">
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Current Key:</span>
+                  <span className="font-mono text-slate-200 text-[11px] truncate max-w-[150px]">
+                    {profile.apiKeyPreview}
+                  </span>
+                </div>
+                <div className="flex justify-between py-1 border-b border-slate-800/80">
+                  <span className="text-slate-400">Permission Scope:</span>
+                  <span className="text-indigo-400 font-semibold">Root Cluster Full Access</span>
+                </div>
+                <div className="flex justify-between py-1">
+                  <span className="text-slate-400">Expiration:</span>
+                  <span className="text-slate-300">Never (Rotatable)</span>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleRotateToken}
+                disabled={isRotatingToken}
+                className="w-full rounded-lg border border-slate-800 bg-slate-950 px-4 py-2 text-xs font-semibold text-slate-300 hover:border-amber-500/50 hover:text-amber-300 transition-colors disabled:opacity-50"
+              >
+                {isRotatingToken ? "Rotating Key..." : "Rotate Master API Key"}
+              </button>
+            </div>
+          </div>
+
+          {/* Full Audit Trail */}
+          <SecurityAuditTrail logs={auditLogs} />
+        </div>
+      )}
+
+      {activeTab === "sessions" && (
+        <div className="animate-in fade-in duration-200">
+          <ActiveSessionsManager
+            sessions={sessions}
+            onRevokeSession={handleRevokeSession}
+            onRevokeOthers={handleRevokeOthers}
+          />
+        </div>
+      )}
+
+      {activeTab === "settings" && (
+        <div className="animate-in fade-in duration-200">
+          <ClusterSettingsForm settings={settings} onSave={handleSaveSettings} />
+        </div>
+      )}
+
+      {/* Edit Profile Modal */}
+      <EditProfileModal
+        isOpen={editModalOpen}
+        onClose={() => setEditModalOpen(false)}
+        profile={profile}
+        onSave={handleSaveProfile}
+      />
+
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={passwordModalOpen}
+        onClose={() => setPasswordModalOpen(false)}
+        onSubmit={handleChangePassword}
+      />
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmationModal
+        isOpen={logoutModalOpen}
+        onClose={() => setLogoutModalOpen(false)}
+        onConfirmLogout={handleConfirmLogout}
+        remoteSessionsCount={remoteSessionsCount}
+      />
     </div>
   );
 }
