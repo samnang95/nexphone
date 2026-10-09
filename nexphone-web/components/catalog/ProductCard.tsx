@@ -6,6 +6,7 @@ import Link from "next/link";
 import type { PhoneProduct } from "@/types/product";
 import { ROUTES } from "@/routes";
 import { useCompare } from "@/context/CompareContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface ProductCardProps {
   product: PhoneProduct;
@@ -20,7 +21,25 @@ export function ProductCard({
 }: ProductCardProps) {
   const [activeColor, setActiveColor] = useState(product.colors[0]);
   const { toggleCompare, isInCompare } = useCompare();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const inCompare = isInCompare(product.id);
+  const inWishlist = isInWishlist(product.id);
+
+  const handleToggleWishlist = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleWishlist({
+      productId: product.id,
+      productName: product.name,
+      productImage: product.imageUrl || "",
+      basePrice: product.basePrice,
+      series: product.series,
+      subtitle: product.subtitle,
+      inStock: totalStock > 0,
+      rating: product.rating,
+      selectedColor: activeColor ? { name: activeColor.name, hex: activeColor.hex } : undefined,
+    });
+  };
 
   const discountAmount =
     product.compareAtPrice && product.compareAtPrice > product.basePrice
@@ -33,30 +52,50 @@ export function ProductCard({
     return (
       <div className="group relative rounded-3xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 p-6 transition-all duration-300 flex flex-col md:flex-row items-center gap-6 hover:shadow-2xl hover:shadow-cyan-500/10">
         {/* Left: Image Container */}
-        <Link
-          href={ROUTES.PRODUCTS.DETAIL(product.id)}
-          className="relative h-48 w-48 shrink-0 rounded-2xl bg-gradient-to-b from-slate-800/40 to-slate-950/80 p-4 flex items-center justify-center border border-slate-800/80 overflow-hidden cursor-pointer"
-        >
+        <div className="relative h-48 w-48 shrink-0 rounded-2xl bg-gradient-to-b from-slate-800/40 to-slate-950/80 p-4 flex items-center justify-center border border-slate-800/80 overflow-hidden">
           {product.isFeatured && (
             <span className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-[9px] font-bold uppercase">
               Featured
             </span>
           )}
-          {product.imageUrl ? (
-            <Image
-              src={product.imageUrl}
-              alt={product.name}
-              width={200}
-              height={200}
-              unoptimized
-              className="max-h-36 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xl"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500 text-xs font-mono">
-              NexPhone
-            </div>
-          )}
-        </Link>
+
+          {/* Wishlist Heart Button in List View */}
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            className={`absolute top-3 right-3 z-20 w-7 h-7 rounded-full border flex items-center justify-center transition-all backdrop-blur-md ${
+              inWishlist
+                ? "bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20"
+                : "bg-slate-900/80 border-slate-700/80 text-slate-400 hover:text-rose-400 hover:border-rose-400/60"
+            }`}
+            title={inWishlist ? "Saved in Wishlist" : "Save to Wishlist"}
+            aria-label={inWishlist ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+          >
+            <svg className={`w-3.5 h-3.5 ${inWishlist ? "fill-current" : "fill-none"}`} viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+
+          <Link
+            href={ROUTES.PRODUCTS.DETAIL(product.id)}
+            className="w-full h-full flex items-center justify-center cursor-pointer"
+          >
+            {product.imageUrl ? (
+              <Image
+                src={product.imageUrl}
+                alt={product.name}
+                width={200}
+                height={200}
+                unoptimized
+                className="max-h-36 w-auto object-contain group-hover:scale-105 transition-transform duration-300 drop-shadow-xl"
+              />
+            ) : (
+              <div className="w-24 h-24 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500 text-xs font-mono">
+                NexPhone
+              </div>
+            )}
+          </Link>
+        </div>
 
         {/* Middle: Details */}
         <div className="flex-1 min-w-0">
@@ -184,10 +223,7 @@ export function ProductCard({
   return (
     <div className="group relative rounded-3xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 transition-all duration-300 flex flex-col justify-between overflow-hidden hover:shadow-2xl hover:shadow-cyan-500/10 hover:-translate-y-1">
       {/* Top Image Preview */}
-      <Link
-        href={ROUTES.PRODUCTS.DETAIL(product.id)}
-        className="relative h-64 w-full bg-gradient-to-b from-slate-800/30 to-transparent p-6 flex items-center justify-center overflow-hidden cursor-pointer"
-      >
+      <div className="relative h-64 w-full bg-gradient-to-b from-slate-800/30 to-transparent p-6 flex items-center justify-center overflow-hidden">
         {/* Featured Pill */}
         {product.isFeatured && (
           <span className="absolute top-4 left-4 z-10 px-2.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-[10px] font-bold tracking-wider uppercase backdrop-blur-md">
@@ -195,27 +231,50 @@ export function ProductCard({
           </span>
         )}
 
-        {/* Rating */}
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-amber-400 text-[11px] font-bold">
-          <span>★</span>
-          <span>{product.rating}</span>
+        {/* Rating & Wishlist Heart */}
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+          <div className="flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-amber-400 text-[11px] font-bold backdrop-blur-md">
+            <span>★</span>
+            <span>{product.rating}</span>
+          </div>
+
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            className={`w-8 h-8 rounded-full border flex items-center justify-center transition-all backdrop-blur-md ${
+              inWishlist
+                ? "bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20 scale-105"
+                : "bg-slate-900/80 border-slate-700/80 text-slate-400 hover:text-rose-400 hover:border-rose-400/60"
+            }`}
+            title={inWishlist ? "Saved in Wishlist" : "Save to Wishlist"}
+            aria-label={inWishlist ? `Remove ${product.name} from wishlist` : `Add ${product.name} to wishlist`}
+          >
+            <svg className={`w-4 h-4 ${inWishlist ? "fill-current" : "fill-none"}`} viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
         </div>
 
-        {product.imageUrl ? (
-          <Image
-            src={product.imageUrl}
-            alt={product.name}
-            width={260}
-            height={260}
-            unoptimized
-            className="max-h-48 w-auto object-contain scale-95 group-hover:scale-105 transition-transform duration-500 drop-shadow-2xl"
-          />
-        ) : (
-          <div className="w-24 h-24 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500 text-xs font-mono">
-            NexPhone
-          </div>
-        )}
-      </Link>
+        <Link
+          href={ROUTES.PRODUCTS.DETAIL(product.id)}
+          className="w-full h-full flex items-center justify-center cursor-pointer"
+        >
+          {product.imageUrl ? (
+            <Image
+              src={product.imageUrl}
+              alt={product.name}
+              width={260}
+              height={260}
+              unoptimized
+              className="max-h-48 w-auto object-contain scale-95 group-hover:scale-105 transition-transform duration-500 drop-shadow-2xl"
+            />
+          ) : (
+            <div className="w-24 h-24 rounded-xl bg-slate-800 flex items-center justify-center text-slate-500 text-xs font-mono">
+              NexPhone
+            </div>
+          )}
+        </Link>
+      </div>
 
       {/* Content Details */}
       <div className="p-6 pt-2 flex-1 flex flex-col justify-between">

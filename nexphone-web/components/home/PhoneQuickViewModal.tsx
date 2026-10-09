@@ -2,8 +2,10 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import { useWishlist } from "@/context/WishlistContext";
 
 export interface QuickViewPhone {
+  id?: string;
   name: string;
   subtitle: string;
   price: number;
@@ -19,6 +21,7 @@ interface PhoneQuickViewModalProps {
 }
 
 export function PhoneQuickViewModal({ phone, onClose }: PhoneQuickViewModalProps) {
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [selectedStorage, setSelectedStorage] = useState<string>("512GB");
   const [selectedColor, setSelectedColor] = useState<string>("Titanium Natural");
   const [isReserved, setIsReserved] = useState<boolean>(false);
@@ -40,6 +43,24 @@ export function PhoneQuickViewModal({ phone, onClose }: PhoneQuickViewModalProps
 
   const currentAdd = storageOptions.find((s) => s.label === selectedStorage)?.addPrice || 0;
   const totalPrice = phone.price + currentAdd;
+  const phoneId = phone?.id || phone?.name.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "nexphone";
+  const inWishlist = isInWishlist(phoneId);
+
+  const handleToggleWishlist = () => {
+    if (!phone) return;
+    const colorObj = colors.find((c) => c.name === selectedColor);
+    toggleWishlist({
+      productId: phoneId,
+      productName: phone.name,
+      productImage: phone.image,
+      basePrice: totalPrice,
+      series: phone.series || "Flagship Series",
+      subtitle: phone.subtitle,
+      inStock: true,
+      rating: 4.9,
+      selectedColor: colorObj ? { name: colorObj.name, hex: colorObj.hex } : undefined,
+    });
+  };
 
   const handleReserve = () => {
     setIsReserved(true);
@@ -179,32 +200,50 @@ export function PhoneQuickViewModal({ phone, onClose }: PhoneQuickViewModalProps
                 </span>
               </div>
 
-              <button
-                type="button"
-                onClick={handleReserve}
-                disabled={isReserved}
-                className={`flex-1 py-3.5 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
-                  isReserved
-                    ? "bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30"
-                    : "bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-xl shadow-cyan-500/25 active:scale-95"
-                }`}
-              >
-                {isReserved ? (
-                  <>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <span>Slot Reserved!</span>
-                  </>
-                ) : (
-                  <>
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" />
-                    </svg>
-                    <span>Reserve Hardware</span>
-                  </>
-                )}
-              </button>
+              <div className="flex items-center gap-2 flex-1 justify-end">
+                <button
+                  type="button"
+                  onClick={handleToggleWishlist}
+                  className={`w-11 h-11 rounded-xl border flex items-center justify-center transition-all shrink-0 ${
+                    inWishlist
+                      ? "bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20"
+                      : "bg-slate-800 border-slate-700 text-slate-300 hover:text-white hover:border-slate-600"
+                  }`}
+                  title={inWishlist ? "Saved in Wishlist" : "Save to Wishlist"}
+                  aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+                >
+                  <svg className={`w-4 h-4 ${inWishlist ? "fill-current text-rose-500" : "fill-none"}`} viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleReserve}
+                  disabled={isReserved}
+                  className={`flex-1 py-3.5 px-4 rounded-xl font-bold text-xs uppercase tracking-wider transition-all flex items-center justify-center gap-2 ${
+                    isReserved
+                      ? "bg-emerald-500 text-slate-950 shadow-lg shadow-emerald-500/30"
+                      : "bg-gradient-to-r from-cyan-500 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white shadow-xl shadow-cyan-500/25 active:scale-95"
+                  }`}
+                >
+                  {isReserved ? (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>Slot Reserved!</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" />
+                      </svg>
+                      <span>Reserve Hardware</span>
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

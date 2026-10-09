@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import type { PhoneProduct, ColorOption, StorageVariant } from "@/types/product";
 import { useCart } from "@/context/CartContext";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface ProductConfiguratorProps {
   product: PhoneProduct;
@@ -20,8 +21,11 @@ export function ProductConfigurator({
   onSelectStorage,
 }: ProductConfiguratorProps) {
   const { addItem, openCart } = useCart();
+  const { toggleWishlist, isInWishlist } = useWishlist();
   const [quantity, setQuantity] = useState(1);
   const [isAddedFeedback, setIsAddedFeedback] = useState(false);
+
+  const inWishlist = isInWishlist(product.id);
 
   // Dynamic price calculations
   const unitPrice = selectedStorage.price;
@@ -71,29 +75,64 @@ export function ProductConfigurator({
     openCart();
   };
 
+  const handleToggleWishlist = () => {
+    toggleWishlist({
+      productId: product.id,
+      productName: product.name,
+      productImage: selectedColor.imageUrl || product.imageUrl || "",
+      basePrice: unitPrice,
+      series: product.series,
+      subtitle: product.subtitle,
+      inStock: !isOutOfStock,
+      rating: product.rating,
+      selectedColor: { name: selectedColor.name, hex: selectedColor.hex },
+    });
+  };
+
   return (
     <div className="flex flex-col gap-6">
       {/* Product Title & Subtitle */}
       <div>
-        <div className="flex items-center gap-2 mb-2">
-          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-            {product.series}
-          </span>
-          <div className="flex items-center gap-1 text-amber-400 text-xs font-bold">
-            <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-            </svg>
-            <span>{product.rating.toFixed(1)}</span>
-            <span className="text-slate-500 text-[11px] font-normal">(420+ Enterprise Reviews)</span>
-          </div>
-        </div>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
+                {product.series}
+              </span>
+              <div className="flex items-center gap-1 text-amber-400 text-xs font-bold">
+                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                <span>{product.rating.toFixed(1)}</span>
+                <span className="text-slate-500 text-[11px] font-normal">(420+ Reviews)</span>
+              </div>
+            </div>
 
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
-          {product.name}
-        </h1>
-        <p className="mt-2 text-sm text-slate-400 leading-relaxed">
-          {product.subtitle}
-        </p>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-white tracking-tight leading-tight">
+              {product.name}
+            </h1>
+            <p className="mt-2 text-sm text-slate-400 leading-relaxed">
+              {product.subtitle}
+            </p>
+          </div>
+
+          {/* Wishlist Header Toggle */}
+          <button
+            type="button"
+            onClick={handleToggleWishlist}
+            className={`w-11 h-11 rounded-2xl border flex items-center justify-center transition-all shrink-0 ${
+              inWishlist
+                ? "bg-rose-500/20 border-rose-500 text-rose-400 shadow-lg shadow-rose-500/20"
+                : "bg-slate-900/80 border-slate-800 text-slate-400 hover:text-rose-400 hover:border-slate-700"
+            }`}
+            title={inWishlist ? "Saved in Wishlist" : "Save to Wishlist"}
+            aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+          >
+            <svg className={`w-5 h-5 ${inWishlist ? "fill-current" : "fill-none"}`} viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Pricing Header */}
@@ -336,6 +375,24 @@ export function ProductConfigurator({
           className="sm:w-auto py-3.5 px-5 rounded-2xl bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-500 hover:to-blue-500 text-white font-bold text-xs uppercase tracking-wider transition-all shadow-lg shadow-indigo-600/20 active:scale-98 disabled:opacity-40 disabled:pointer-events-none"
         >
           Express Order
+        </button>
+
+        {/* Wishlist CTA Button */}
+        <button
+          type="button"
+          onClick={handleToggleWishlist}
+          className={`py-3.5 px-4 rounded-2xl border flex items-center justify-center gap-2 font-bold text-xs uppercase tracking-wider transition-all shrink-0 ${
+            inWishlist
+              ? "bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20"
+              : "bg-slate-900 border-slate-800 text-slate-300 hover:text-white hover:border-slate-700"
+          }`}
+          title={inWishlist ? "Saved in Wishlist" : "Save to Wishlist"}
+          aria-label={inWishlist ? "Remove from wishlist" : "Add to wishlist"}
+        >
+          <svg className={`w-4 h-4 ${inWishlist ? "fill-current text-rose-500" : "fill-none"}`} viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+          </svg>
+          <span className="hidden sm:inline">{inWishlist ? "Saved" : "Favorite"}</span>
         </button>
       </div>
 

@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { FeaturedPhone } from "@/types/content";
 import { ROUTES } from "@/routes";
+import { useWishlist } from "@/context/WishlistContext";
 
 interface FeaturedPhonesSectionProps {
   phones: FeaturedPhone[];
@@ -21,6 +22,7 @@ interface FeaturedPhonesSectionProps {
 
 export function FeaturedPhonesSection({ phones, onOpenQuickView }: FeaturedPhonesSectionProps) {
   const [selectedSeries, setSelectedSeries] = useState<string>("All");
+  const { toggleWishlist, isInWishlist } = useWishlist();
 
   const seriesList = ["All", ...Array.from(new Set(phones.map((p) => p.series)))];
 
@@ -73,10 +75,7 @@ export function FeaturedPhonesSection({ phones, onOpenQuickView }: FeaturedPhone
             className="group relative rounded-3xl bg-gradient-to-b from-slate-900/90 to-slate-950/90 border border-slate-800/80 hover:border-cyan-500/40 transition-all duration-300 flex flex-col justify-between overflow-hidden hover:shadow-2xl hover:shadow-cyan-500/10 hover:-translate-y-1"
           >
             {/* Top Image Preview with Glow */}
-            <Link
-              href={ROUTES.PRODUCTS.DETAIL(phone.productId || phone.id)}
-              className="relative h-64 w-full bg-gradient-to-b from-slate-800/20 to-transparent p-6 flex items-center justify-center overflow-hidden cursor-pointer"
-            >
+            <div className="relative h-64 w-full bg-gradient-to-b from-slate-800/20 to-transparent p-6 flex items-center justify-center overflow-hidden">
               <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/5 via-transparent to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               
               {/* Badge */}
@@ -84,24 +83,59 @@ export function FeaturedPhonesSection({ phones, onOpenQuickView }: FeaturedPhone
                 {phone.badge}
               </span>
 
-              {/* Rating */}
-              <div className="absolute top-4 right-4 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900/80 border border-slate-800 text-amber-400 text-[11px] font-bold">
-                <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
-                <span>{phone.rating}</span>
+              {/* Rating & Wishlist Heart */}
+              <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+                <div className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-slate-900/80 border border-slate-800 text-amber-400 text-[11px] font-bold backdrop-blur-md">
+                  <svg className="w-3.5 h-3.5 fill-current" viewBox="0 0 20 20">
+                    <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                  </svg>
+                  <span>{phone.rating}</span>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    const pid = phone.productId || phone.id;
+                    toggleWishlist({
+                      productId: pid,
+                      productName: phone.productName,
+                      productImage: phone.productImage,
+                      basePrice: phone.productPrice,
+                      series: phone.series,
+                      subtitle: phone.headline || phone.productSubtitle,
+                      inStock: true,
+                      rating: phone.rating,
+                    });
+                  }}
+                  className={`w-7 h-7 rounded-full border flex items-center justify-center transition-all backdrop-blur-md ${
+                    isInWishlist(phone.productId || phone.id)
+                      ? "bg-rose-500/20 border-rose-500 text-rose-400 shadow-md shadow-rose-500/20 scale-105"
+                      : "bg-slate-900/80 border-slate-700/80 text-slate-400 hover:text-rose-400 hover:border-rose-400/60"
+                  }`}
+                  title={isInWishlist(phone.productId || phone.id) ? "Saved in Wishlist" : "Save to Wishlist"}
+                  aria-label={isInWishlist(phone.productId || phone.id) ? `Remove ${phone.productName} from wishlist` : `Add ${phone.productName} to wishlist`}
+                >
+                  <svg className={`w-3.5 h-3.5 ${isInWishlist(phone.productId || phone.id) ? "fill-current" : "fill-none"}`} viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                  </svg>
+                </button>
               </div>
 
-              {/* Phone Image */}
-              <Image
-                src={phone.productImage}
-                alt={phone.productName}
-                width={280}
-                height={280}
-                unoptimized
-                className="max-h-48 w-auto object-contain scale-95 group-hover:scale-105 transition-transform duration-500 drop-shadow-2xl"
-              />
-            </Link>
+              {/* Phone Image Link */}
+              <Link
+                href={ROUTES.PRODUCTS.DETAIL(phone.productId || phone.id)}
+                className="w-full h-full flex items-center justify-center cursor-pointer"
+              >
+                <Image
+                  src={phone.productImage}
+                  alt={phone.productName}
+                  width={280}
+                  height={280}
+                  unoptimized
+                  className="max-h-48 w-auto object-contain scale-95 group-hover:scale-105 transition-transform duration-500 drop-shadow-2xl"
+                />
+              </Link>
+            </div>
 
             {/* Content Details */}
             <div className="p-6 pt-2 flex-1 flex flex-col justify-between">

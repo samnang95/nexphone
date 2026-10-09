@@ -5,12 +5,14 @@ import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useCompare } from "@/context/CompareContext";
+import { useWishlist } from "@/context/WishlistContext";
 import { ROUTES } from "@/routes";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const { openCart, totalItems } = useCart();
   const { totalCompare } = useCompare();
+  const { totalWishlist } = useWishlist();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -109,6 +111,35 @@ export function Navbar() {
 
         {/* Right Actions / Auth Menu */}
         <div className="flex items-center gap-3">
+          {/* Wishlist Trigger */}
+          <Link
+            href={ROUTES.WISHLIST}
+            className="relative flex items-center justify-center p-2 rounded-xl text-slate-300 hover:text-rose-400 hover:bg-slate-800/80 border border-slate-800 bg-slate-900/60 transition-all focus:outline-none"
+            aria-label="View favorites and wishlist"
+            title="Wishlist / Favorites"
+          >
+            <svg
+              className={`w-5 h-5 transition-colors ${
+                totalWishlist > 0 ? "text-rose-400 fill-rose-500/20" : "text-slate-300"
+              }`}
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={1.75}
+                d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"
+              />
+            </svg>
+            {totalWishlist > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-rose-500 text-[10px] font-black text-white shadow-md shadow-rose-500/40 animate-pulse">
+                {totalWishlist}
+              </span>
+            )}
+          </Link>
+
           {/* Cart Drawer Trigger */}
           <button
             type="button"
@@ -306,6 +337,18 @@ export function Navbar() {
             {totalCompare > 0 && (
               <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">
                 {totalCompare}/3
+              </span>
+            )}
+          </Link>
+          <Link
+            href={ROUTES.WISHLIST}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-xs font-medium text-rose-300 hover:bg-slate-800 flex items-center justify-between"
+          >
+            <span>Wishlist & Favorites</span>
+            {totalWishlist > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono">
+                {totalWishlist}
               </span>
             )}
           </Link>

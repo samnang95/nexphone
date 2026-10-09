@@ -13,6 +13,7 @@ export const ROUTES = {
   },
   EXPERIENCE_3D: "/viewer",
   COMPARE: "/compare",
+  WISHLIST: "/wishlist",
   CART: "/cart",
   CHECKOUT: "/checkout",
   ORDERS: {
