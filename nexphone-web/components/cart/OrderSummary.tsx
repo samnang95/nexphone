@@ -2,10 +2,12 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useCart } from "@/context/CartContext";
 import { ROUTES } from "@/routes";
 
 export function OrderSummary() {
+  const router = useRouter();
   const {
     subtotal,
     shipping,
@@ -33,10 +35,7 @@ export function OrderSummary() {
 
   const handleCheckout = () => {
     setIsCheckingOut(true);
-    setTimeout(() => {
-      alert("Encrypted checkout session generated. Connecting to hardware HSM enclave...");
-      setIsCheckingOut(false);
-    }, 1200);
+    router.push(ROUTES.CHECKOUT);
   };
 
   const monthlyRate = (total / 24).toFixed(2);

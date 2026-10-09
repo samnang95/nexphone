@@ -2189,6 +2189,60 @@ app.get("/api/orders", (req: Request, res: Response) => {
   res.json(result);
 });
 
+// Create New Order
+app.post("/api/orders", (req: Request, res: Response) => {
+  const body = req.body || {};
+  const orderNumber = `NX-ORD-${Math.floor(1000 + Math.random() * 9000)}`;
+  const newOrder = {
+    id: orderNumber,
+    orderNumber,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: "processing",
+    customer: body.customer || {
+      name: "Enclave Customer",
+      email: "customer@nexphone.io",
+      phone: "+1 (555) 019-2834",
+      shippingAddress: {
+        street: "1 Infinite Loop",
+        city: "Cupertino",
+        state: "CA",
+        zipCode: "95014",
+        country: "United States",
+      },
+    },
+    items: body.items || [],
+    subtotal: body.subtotal || 0,
+    discount: body.discount || 0,
+    shippingFee: body.shippingFee || 0,
+    tax: body.tax || 0,
+    total: body.total || 0,
+    payment: body.payment || {
+      method: "credit_card",
+      status: "paid",
+      transactionId: `TXN-${Date.now()}`,
+    },
+    shipping: body.shipping || {
+      carrier: "NexExpress Armored Courier",
+      trackingNumber: `NX-TRK-${Math.floor(10000000 + Math.random() * 90000000)}`,
+      estimatedDelivery: "2-3 Business Days",
+    },
+    timeline: [
+      {
+        id: `tl-${Date.now()}`,
+        status: "processing",
+        label: "Encrypted Order Placed",
+        description: "Order received and hardware allocation reserved via Secure Enclave",
+        timestamp: new Date().toISOString(),
+        actor: "System",
+      },
+    ],
+  };
+
+  ordersStore.unshift(newOrder as any);
+  res.status(201).json(newOrder);
+});
+
 // Single Order Detail
 app.get("/api/orders/:id", (req: Request, res: Response) => {
   const { id } = req.params;

@@ -447,18 +447,16 @@ export function CartDrawer() {
 
               {/* Action Buttons */}
               <div className="space-y-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    alert("Encrypted Checkout flow initialized. Proceeding to payment tokenization.");
-                  }}
-                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider shadow-xl shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 active:scale-95"
+                <Link
+                  href={ROUTES.CHECKOUT}
+                  onClick={closeCart}
+                  className="w-full py-3.5 rounded-xl bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:to-indigo-500 text-white font-bold text-xs uppercase tracking-wider shadow-xl shadow-cyan-500/25 transition-all flex items-center justify-center gap-2 active:scale-95 text-center"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                   </svg>
                   <span>Encrypted Checkout • ${total.toLocaleString()}</span>
-                </button>
+                </Link>
 
                 <div className="flex items-center gap-2">
                   <Link
