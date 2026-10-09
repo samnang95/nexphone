@@ -12,6 +12,7 @@ export const ROUTES = {
     SERIES: (series: string) => `/products?series=${encodeURIComponent(series)}`,
   },
   EXPERIENCE_3D: "/viewer",
+  COMPARE: "/compare",
   CART: "/cart",
   CHECKOUT: "/checkout",
   ORDERS: {

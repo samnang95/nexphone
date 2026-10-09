@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { PhoneProduct } from "@/types/product";
 import { ROUTES } from "@/routes";
+import { useCompare } from "@/context/CompareContext";
 
 interface ProductCardProps {
   product: PhoneProduct;
@@ -18,6 +19,8 @@ export function ProductCard({
   onQuickView,
 }: ProductCardProps) {
   const [activeColor, setActiveColor] = useState(product.colors[0]);
+  const { toggleCompare, isInCompare } = useCompare();
+  const inCompare = isInCompare(product.id);
 
   const discountAmount =
     product.compareAtPrice && product.compareAtPrice > product.basePrice
@@ -141,6 +144,19 @@ export function ProductCard({
           </div>
 
           <div className="mt-4 flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => toggleCompare(product.id)}
+              className={`p-2.5 rounded-xl border font-mono text-[10px] font-bold transition-all flex items-center gap-1.5 ${
+                inCompare
+                  ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40 shadow-sm shadow-cyan-500/10"
+                  : "bg-slate-800/80 text-slate-400 border-slate-700 hover:text-white hover:border-slate-600"
+              }`}
+              title={inCompare ? "Remove from comparison" : "Add to comparison"}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${inCompare ? "bg-cyan-400 animate-pulse" : "bg-slate-500"}`} />
+              <span>{inCompare ? "Compared" : "Compare"}</span>
+            </button>
             <Link
               href={ROUTES.EXPERIENCE_3D}
               className="p-2.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 transition-all font-mono text-[10px] font-bold"
@@ -268,6 +284,19 @@ export function ProductCard({
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => toggleCompare(product.id)}
+              className={`p-2 rounded-xl border font-mono text-[10px] font-bold transition-all flex items-center gap-1 ${
+                inCompare
+                  ? "bg-cyan-500/20 text-cyan-300 border-cyan-500/40"
+                  : "bg-slate-800/80 text-slate-400 border-slate-700 hover:text-white"
+              }`}
+              title={inCompare ? "Remove from comparison" : "Add to comparison"}
+            >
+              <span className={`w-1.5 h-1.5 rounded-full ${inCompare ? "bg-cyan-400" : "bg-slate-500"}`} />
+              <span>{inCompare ? "Compared" : "Compare"}</span>
+            </button>
             <Link
               href={ROUTES.EXPERIENCE_3D}
               className="p-2 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 transition-all font-mono text-[10px] font-bold"

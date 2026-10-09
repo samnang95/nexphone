@@ -4,11 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
+import { useCompare } from "@/context/CompareContext";
 import { ROUTES } from "@/routes";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
   const { openCart, totalItems } = useCart();
+  const { totalCompare } = useCompare();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -84,6 +86,17 @@ export function Navbar() {
             >
               <span className="flex h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
               <span>3D Studio</span>
+            </Link>
+            <Link
+              href={ROUTES.COMPARE}
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors flex items-center gap-1.5"
+            >
+              <span>Compare</span>
+              {totalCompare > 0 && (
+                <span className="px-1.5 py-0.2 rounded-full bg-cyan-500/20 text-cyan-400 font-mono text-[10px] font-bold border border-cyan-500/30">
+                  {totalCompare}
+                </span>
+              )}
             </Link>
             <Link
               href="/#deals-section"
@@ -283,6 +296,18 @@ export function Navbar() {
             <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">
               360°
             </span>
+          </Link>
+          <Link
+            href={ROUTES.COMPARE}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800 flex items-center justify-between"
+          >
+            <span>Compare Phones</span>
+            {totalCompare > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">
+                {totalCompare}/3
+              </span>
+            )}
           </Link>
           <Link
             href="/#deals-section"
