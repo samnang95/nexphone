@@ -47,6 +47,7 @@ export const ROUTES = {
   TELEMETRY: "/telemetry",
   FIRMWARE: "/firmware",
   ANALYTICS: "/analytics",
+  REPORTS: "/analytics",
   SETTINGS: "/settings",
 } as const;
 

@@ -161,9 +161,10 @@ export const ROUTE_REGISTRY: Record<string, RouteMeta> = {
   analytics: {
     key: "analytics",
     path: ROUTES.ANALYTICS,
-    title: "Fleet Analytics",
-    description: "Hardware performance benchmarks, VoIP packet health, and call traffic.",
-    category: "Fleet",
+    title: "Reports & Analytics",
+    description: "Commercial sales volume, revenue breakdown, best-selling devices, customer cohorts, and inventory supply chain reports.",
+    category: "Core",
+    badge: "BI",
     iconName: "bar-chart-3",
   },
   settings: {
@@ -198,7 +199,7 @@ export const ADMIN_NAV_SECTIONS: readonly NavRouteSection[] = [
     items: [
       { title: "Telemetry & Logs", href: ROUTES.TELEMETRY, badge: "Live", iconName: "activity" },
       { title: "Firmware OTA", href: ROUTES.FIRMWARE, iconName: "cloud-upload" },
-      { title: "Fleet Analytics", href: ROUTES.ANALYTICS, iconName: "bar-chart-3" },
+      { title: "Reports & Analytics", href: ROUTES.ANALYTICS, badge: "BI", iconName: "bar-chart-3" },
     ],
   },
   {
@@ -257,8 +258,8 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
       crumbs.push({ label: "Telemetry & Logs", href: ROUTES.TELEMETRY, isCurrent });
     } else if (segment === "firmware") {
       crumbs.push({ label: "Firmware OTA", href: ROUTES.FIRMWARE, isCurrent });
-    } else if (segment === "analytics") {
-      crumbs.push({ label: "Fleet Analytics", href: ROUTES.ANALYTICS, isCurrent });
+    } else if (segment === "analytics" || segment === "reports") {
+      crumbs.push({ label: "Reports & Analytics", href: ROUTES.ANALYTICS, isCurrent });
     } else if (segment === "settings") {
       crumbs.push({ label: "Cluster Settings", href: ROUTES.SETTINGS, isCurrent });
     } else if (segment === "profile") {
