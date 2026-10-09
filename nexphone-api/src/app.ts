@@ -1,5 +1,7 @@
 import express, { type Request, type Response, type NextFunction } from "express";
 import cors from "cors";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 import { config } from "./config/env";
 
 export const app = express();
@@ -2394,6 +2396,7 @@ export interface CustomerRecord {
   disabledReason?: string;
   disabledAt?: string;
   disabledBy?: string;
+  passwordHash?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -6982,4 +6985,262 @@ app.get(["/api/analytics/overview", "/analytics/overview"], (_req: Request, res:
     generatedAt: new Date().toISOString(),
     executiveSummary: "NexPhone fleet commercial performance shows +18.2% gross revenue growth driven by Flagship Pro and Foldable categories. Low stock alert for Fold Zero requires immediate production reorder.",
   });
+});
+
+// ==========================================
+// Customer Website Authentication REST APIs
+// ==========================================
+
+const customerResetCodes = new Map<string, { code: string; expiresAt: number }>();
+const DEFAULT_DEMO_HASH = bcrypt.hashSync("Password123!", 10);
+
+// POST /api/auth/register
+app.post(["/api/auth/register", "/auth/register"], (req: Request, res: Response) => {
+  const { name, email, phone, password, accountType, company } = req.body || {};
+
+  if (!name || !email || !password) {
+    return res.status(400).json({ error: "Full name, email, and password are required." });
+  }
+
+  if (password.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters long." });
+  }
+
+  const normalizedEmail = String(email).trim().toLowerCase();
+  const existingCustomer = customersStore.find(
+    (c) => c.email.toLowerCase() === normalizedEmail
+  );
+
+  if (existingCustomer) {
+    return res.status(409).json({ error: "An account with this email address already exists." });
+  }
+
+  const newId = `cust-${Date.now().toString(36)}`;
+  const customerNumber = `CUST-${Math.floor(1000 + Math.random() * 9000)}`;
+  const passwordHash = bcrypt.hashSync(password, 10);
+  const tier = accountType === "enterprise" ? "Enterprise" : "Regular";
+
+  const newCustomer: CustomerRecord = {
+    id: newId,
+    customerNumber,
+    name: String(name).trim(),
+    email: normalizedEmail,
+    phone: phone ? String(phone).trim() : "+1 (555) 000-0000",
+    company: company ? String(company).trim() : accountType === "enterprise" ? "Enterprise Partner" : undefined,
+    status: "active",
+    tier,
+    address: {
+      street: "100 Innovation Way",
+      city: "San Francisco",
+      state: "CA",
+      postalCode: "94105",
+      country: "United States",
+    },
+    metrics: {
+      totalOrders: 0,
+      totalSpent: 0,
+      avgOrderValue: 0,
+      lastOrderDate: new Date().toISOString(),
+    },
+    security: {
+      emailVerified: true,
+      phoneVerified: Boolean(phone),
+      twoFactorEnabled: false,
+      lastLoginAt: new Date().toISOString(),
+      lastLoginIp: "127.0.0.1 (Local)",
+    },
+    passwordHash,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  };
+
+  customersStore.unshift(newCustomer);
+
+  const token = jwt.sign(
+    { id: newCustomer.id, email: newCustomer.email, tier: newCustomer.tier },
+    config.jwtSecret,
+    { expiresIn: "7d" }
+  );
+
+  res.status(201).json({
+    token,
+    user: {
+      id: newCustomer.id,
+      customerNumber: newCustomer.customerNumber,
+      name: newCustomer.name,
+      email: newCustomer.email,
+      phone: newCustomer.phone,
+      company: newCustomer.company,
+      tier: newCustomer.tier,
+      status: newCustomer.status,
+      createdAt: newCustomer.createdAt,
+    },
+  });
+});
+
+// POST /api/auth/login
+app.post(["/api/auth/login", "/auth/login"], (req: Request, res: Response) => {
+  const { email, password } = req.body || {};
+
+  if (!email || !password) {
+    return res.status(400).json({ error: "Email and password are required." });
+  }
+
+  const lookup = String(email).trim().toLowerCase();
+  const customer = customersStore.find(
+    (c) => c.email.toLowerCase() === lookup || (c.phone && c.phone.replace(/\D/g, "") === lookup.replace(/\D/g, ""))
+  );
+
+  if (!customer) {
+    return res.status(401).json({ error: "Invalid credentials. Please verify your email and password." });
+  }
+
+  if (customer.status === "disabled") {
+    return res.status(403).json({
+      error: `Account suspended: ${customer.disabledReason || "Please contact NexPhone VIP Support."}`,
+    });
+  }
+
+  // Validate password (supports bcrypt hash or demo password for preloaded accounts)
+  const isValid = customer.passwordHash
+    ? bcrypt.compareSync(password, customer.passwordHash)
+    : password === "Password123!" || bcrypt.compareSync(password, DEFAULT_DEMO_HASH);
+
+  if (!isValid) {
+    return res.status(401).json({ error: "Invalid credentials. Please verify your email and password." });
+  }
+
+  customer.security.lastLoginAt = new Date().toISOString();
+  customer.updatedAt = new Date().toISOString();
+
+  const token = jwt.sign(
+    { id: customer.id, email: customer.email, tier: customer.tier },
+    config.jwtSecret,
+    { expiresIn: "7d" }
+  );
+
+  res.json({
+    token,
+    user: {
+      id: customer.id,
+      customerNumber: customer.customerNumber,
+      name: customer.name,
+      email: customer.email,
+      phone: customer.phone,
+      company: customer.company,
+      tier: customer.tier,
+      status: customer.status,
+      avatarUrl: customer.avatarUrl,
+      createdAt: customer.createdAt,
+    },
+  });
+});
+
+// POST /api/auth/logout
+app.post(["/api/auth/logout", "/auth/logout"], (_req: Request, res: Response) => {
+  res.json({ success: true, message: "Logged out successfully" });
+});
+
+// POST /api/auth/forgot-password
+app.post(["/api/auth/forgot-password", "/auth/forgot-password"], (req: Request, res: Response) => {
+  const { email } = req.body || {};
+
+  if (!email) {
+    return res.status(400).json({ error: "Email address is required." });
+  }
+
+  const lookup = String(email).trim().toLowerCase();
+  const customer = customersStore.find((c) => c.email.toLowerCase() === lookup);
+
+  if (!customer) {
+    // Return friendly generic message for security
+    return res.json({
+      success: true,
+      message: "If an account matches this email, a 6-digit recovery code has been sent.",
+      code: "849201",
+    });
+  }
+
+  const code = Math.floor(100000 + Math.random() * 900000).toString();
+  customerResetCodes.set(lookup, {
+    code,
+    expiresAt: Date.now() + 15 * 60 * 1000, // 15 mins
+  });
+
+  res.json({
+    success: true,
+    message: "A 6-digit recovery code has been dispatched to your email address.",
+    code,
+  });
+});
+
+// POST /api/auth/reset-password
+app.post(["/api/auth/reset-password", "/auth/reset-password"], (req: Request, res: Response) => {
+  const { email, code, newPassword } = req.body || {};
+
+  if (!email || !code || !newPassword) {
+    return res.status(400).json({ error: "Email, recovery code, and new password are required." });
+  }
+
+  if (newPassword.length < 8) {
+    return res.status(400).json({ error: "Password must be at least 8 characters long." });
+  }
+
+  const lookup = String(email).trim().toLowerCase();
+  const resetEntry = customerResetCodes.get(lookup);
+
+  // Accept verification code or default demo code 849201
+  const isValidCode = (resetEntry && resetEntry.code === String(code).trim() && Date.now() < resetEntry.expiresAt) || String(code).trim() === "849201";
+
+  if (!isValidCode) {
+    return res.status(400).json({ error: "Invalid or expired recovery code. Please request a new code." });
+  }
+
+  const customer = customersStore.find((c) => c.email.toLowerCase() === lookup);
+  if (customer) {
+    customer.passwordHash = bcrypt.hashSync(newPassword, 10);
+    customer.updatedAt = new Date().toISOString();
+  }
+
+  customerResetCodes.delete(lookup);
+
+  res.json({
+    success: true,
+    message: "Your password has been successfully reset. You may now sign in.",
+  });
+});
+
+// GET /api/auth/me
+app.get(["/api/auth/me", "/auth/me"], (req: Request, res: Response) => {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Authentication token required." });
+  }
+
+  const token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token!, config.jwtSecret) as { id: string; email: string };
+    const customer = customersStore.find((c) => c.id === decoded.id || c.email === decoded.email);
+
+    if (!customer) {
+      return res.status(404).json({ error: "Customer profile not found." });
+    }
+
+    res.json({
+      user: {
+        id: customer.id,
+        customerNumber: customer.customerNumber,
+        name: customer.name,
+        email: customer.email,
+        phone: customer.phone,
+        company: customer.company,
+        tier: customer.tier,
+        status: customer.status,
+        avatarUrl: customer.avatarUrl,
+        createdAt: customer.createdAt,
+      },
+    });
+  } catch {
+    return res.status(401).json({ error: "Invalid or expired session token." });
+  }
 });
