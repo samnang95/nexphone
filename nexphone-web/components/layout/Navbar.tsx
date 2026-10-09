@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { ROUTES } from "@/routes";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
@@ -142,7 +143,7 @@ export function Navbar() {
 
                   <div className="py-1">
                     <Link
-                      href="/"
+                      href={ROUTES.ACCOUNT.PROFILE}
                       onClick={() => setIsDropdownOpen(false)}
                       className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors"
                     >
@@ -153,7 +154,7 @@ export function Navbar() {
                     </Link>
 
                     <Link
-                      href="/"
+                      href={ROUTES.ORDERS.ROOT}
                       onClick={() => setIsDropdownOpen(false)}
                       className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors"
                     >
@@ -164,7 +165,7 @@ export function Navbar() {
                     </Link>
 
                     <Link
-                      href="/forgot-password"
+                      href={ROUTES.AUTH.FORGOT_PASSWORD}
                       onClick={() => setIsDropdownOpen(false)}
                       className="flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors"
                     >
@@ -196,13 +197,13 @@ export function Navbar() {
           ) : (
             <div className="flex items-center gap-2">
               <Link
-                href="/login"
+                href={ROUTES.AUTH.LOGIN}
                 className="rounded-lg px-3.5 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
               >
                 Sign In
               </Link>
               <Link
-                href="/register"
+                href={ROUTES.AUTH.REGISTER}
                 className="rounded-lg bg-gradient-to-r from-indigo-600 via-indigo-500 to-cyan-500 px-4 py-1.5 text-xs font-bold text-white shadow-lg shadow-indigo-600/25 hover:shadow-indigo-600/40 hover:brightness-110 transition-all"
               >
                 Get Started

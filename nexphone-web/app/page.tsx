@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import { useAuth } from "@/context/AuthContext";
+import { ROUTES } from "@/routes";
 
 export default function HomePage() {
   const { user, isAuthenticated, logout, login } = useAuth();
@@ -201,7 +201,7 @@ export default function HomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
             {/* 1. Register */}
             <Link
-              href="/register"
+              href={ROUTES.AUTH.REGISTER}
               className="group p-5 rounded-2xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 transition-all flex flex-col justify-between hover:shadow-xl hover:shadow-cyan-500/10"
             >
               <div>
@@ -223,7 +223,7 @@ export default function HomePage() {
 
             {/* 2. Login */}
             <Link
-              href="/login"
+              href={ROUTES.AUTH.LOGIN}
               className="group p-5 rounded-2xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-blue-500/40 transition-all flex flex-col justify-between hover:shadow-xl hover:shadow-blue-500/10"
             >
               <div>
@@ -273,7 +273,7 @@ export default function HomePage() {
 
             {/* 4. Forgot Password */}
             <Link
-              href="/forgot-password"
+              href={ROUTES.AUTH.FORGOT_PASSWORD}
               className="group p-5 rounded-2xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-amber-500/40 transition-all flex flex-col justify-between hover:shadow-xl hover:shadow-amber-500/10"
             >
               <div>
@@ -295,7 +295,7 @@ export default function HomePage() {
 
             {/* 5. Reset Password */}
             <Link
-              href="/reset-password"
+              href={ROUTES.AUTH.RESET_PASSWORD}
               className="group p-5 rounded-2xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-emerald-500/40 transition-all flex flex-col justify-between hover:shadow-xl hover:shadow-emerald-500/10"
             >
               <div>
@@ -330,13 +330,13 @@ export default function HomePage() {
               </p>
               <div className="flex flex-wrap gap-4">
                 <Link
-                  href="/register"
+                  href={ROUTES.AUTH.REGISTER}
                   className="px-5 py-3 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-colors shadow-lg shadow-cyan-500/20"
                 >
                   Reserve Your NexPhone
                 </Link>
                 <Link
-                  href="/login"
+                  href={ROUTES.AUTH.LOGIN}
                   className="px-5 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-semibold text-xs tracking-wider transition-colors border border-slate-700"
                 >
                   Manage Existing Order
@@ -358,10 +358,10 @@ export default function HomePage() {
             <span>— NexID Commercial Platform v4.0</span>
           </div>
           <div className="flex items-center gap-6">
-            <Link href="/login" className="hover:text-cyan-400 transition-colors">Sign In</Link>
-            <Link href="/register" className="hover:text-cyan-400 transition-colors">Register</Link>
-            <Link href="/forgot-password" className="hover:text-cyan-400 transition-colors">Forgot Password</Link>
-            <Link href="/reset-password" className="hover:text-cyan-400 transition-colors">Reset Password</Link>
+            <Link href={ROUTES.AUTH.LOGIN} className="hover:text-cyan-400 transition-colors">Sign In</Link>
+            <Link href={ROUTES.AUTH.REGISTER} className="hover:text-cyan-400 transition-colors">Register</Link>
+            <Link href={ROUTES.AUTH.FORGOT_PASSWORD} className="hover:text-cyan-400 transition-colors">Forgot Password</Link>
+            <Link href={ROUTES.AUTH.RESET_PASSWORD} className="hover:text-cyan-400 transition-colors">Reset Password</Link>
           </div>
         </div>
       </footer>
