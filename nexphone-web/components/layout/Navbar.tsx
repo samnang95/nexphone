@@ -59,28 +59,28 @@ export function Navbar() {
           {/* Desktop Nav Links */}
           <div className="hidden md:flex items-center gap-1 pl-4">
             <Link
-              href="/"
+              href={ROUTES.PRODUCTS.ROOT}
               className="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors"
             >
               Flagships
             </Link>
             <Link
-              href="/"
+              href={`${ROUTES.PRODUCTS.ROOT}?series=Foldable`}
               className="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors"
             >
-              Dual Enclave 3D
+              Foldables
             </Link>
             <Link
-              href="/"
-              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors"
-            >
-              Satellite Mesh
-            </Link>
-            <Link
-              href="/"
+              href={`${ROUTES.PRODUCTS.ROOT}?series=Enterprise`}
               className="rounded-lg px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-800/60 transition-colors"
             >
               Enterprise Fleet
+            </Link>
+            <Link
+              href="/#deals-section"
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors"
+            >
+              Special Deals
             </Link>
           </div>
         </div>
@@ -227,17 +227,33 @@ export function Navbar() {
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div className="md:hidden border-b border-slate-800 bg-[#090d16] px-4 py-3 space-y-2">
-          <Link href="/" className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800">
-            Flagships
+          <Link
+            href={ROUTES.PRODUCTS.ROOT}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800"
+          >
+            All Flagships
           </Link>
-          <Link href="/" className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800">
-            Dual Enclave 3D
+          <Link
+            href={`${ROUTES.PRODUCTS.ROOT}?series=Foldable`}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800"
+          >
+            Foldables
           </Link>
-          <Link href="/" className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800">
-            Satellite Mesh
-          </Link>
-          <Link href="/" className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800">
+          <Link
+            href={`${ROUTES.PRODUCTS.ROOT}?series=Enterprise`}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800"
+          >
             Enterprise Fleet
+          </Link>
+          <Link
+            href="/#deals-section"
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-xs font-medium text-cyan-400 hover:bg-slate-800"
+          >
+            Special Deals
           </Link>
         </div>
       )}
