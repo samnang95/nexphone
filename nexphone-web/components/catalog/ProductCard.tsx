@@ -2,7 +2,9 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { PhoneProduct } from "@/types/product";
+import { ROUTES } from "@/routes";
 
 interface ProductCardProps {
   product: PhoneProduct;
@@ -28,7 +30,10 @@ export function ProductCard({
     return (
       <div className="group relative rounded-3xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 p-6 transition-all duration-300 flex flex-col md:flex-row items-center gap-6 hover:shadow-2xl hover:shadow-cyan-500/10">
         {/* Left: Image Container */}
-        <div className="relative h-48 w-48 shrink-0 rounded-2xl bg-gradient-to-b from-slate-800/40 to-slate-950/80 p-4 flex items-center justify-center border border-slate-800/80 overflow-hidden">
+        <Link
+          href={ROUTES.PRODUCTS.DETAIL(product.id)}
+          className="relative h-48 w-48 shrink-0 rounded-2xl bg-gradient-to-b from-slate-800/40 to-slate-950/80 p-4 flex items-center justify-center border border-slate-800/80 overflow-hidden cursor-pointer"
+        >
           {product.isFeatured && (
             <span className="absolute top-3 left-3 z-10 px-2 py-0.5 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-[9px] font-bold uppercase">
               Featured
@@ -48,7 +53,7 @@ export function ProductCard({
               NexPhone
             </div>
           )}
-        </div>
+        </Link>
 
         {/* Middle: Details */}
         <div className="flex-1 min-w-0">
@@ -63,9 +68,11 @@ export function ProductCard({
             </div>
           </div>
 
-          <h3 className="text-xl font-bold text-white group-hover:text-cyan-300 transition-colors truncate">
-            {product.name}
-          </h3>
+          <Link href={ROUTES.PRODUCTS.DETAIL(product.id)}>
+            <h3 className="text-xl font-bold text-white hover:text-cyan-300 transition-colors truncate">
+              {product.name}
+            </h3>
+          </Link>
           <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
             {product.subtitle}
           </p>
@@ -154,7 +161,10 @@ export function ProductCard({
   return (
     <div className="group relative rounded-3xl bg-slate-900/60 hover:bg-slate-900 border border-slate-800 hover:border-cyan-500/40 transition-all duration-300 flex flex-col justify-between overflow-hidden hover:shadow-2xl hover:shadow-cyan-500/10 hover:-translate-y-1">
       {/* Top Image Preview */}
-      <div className="relative h-64 w-full bg-gradient-to-b from-slate-800/30 to-transparent p-6 flex items-center justify-center overflow-hidden">
+      <Link
+        href={ROUTES.PRODUCTS.DETAIL(product.id)}
+        className="relative h-64 w-full bg-gradient-to-b from-slate-800/30 to-transparent p-6 flex items-center justify-center overflow-hidden cursor-pointer"
+      >
         {/* Featured Pill */}
         {product.isFeatured && (
           <span className="absolute top-4 left-4 z-10 px-2.5 py-1 rounded-full bg-cyan-500/20 border border-cyan-500/30 text-cyan-300 text-[10px] font-bold tracking-wider uppercase backdrop-blur-md">
@@ -182,7 +192,7 @@ export function ProductCard({
             NexPhone
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Content Details */}
       <div className="p-6 pt-2 flex-1 flex flex-col justify-between">
@@ -191,9 +201,11 @@ export function ProductCard({
           <div className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider mb-1">
             {product.series}
           </div>
-          <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug truncate">
-            {product.name}
-          </h3>
+          <Link href={ROUTES.PRODUCTS.DETAIL(product.id)}>
+            <h3 className="text-lg font-bold text-white hover:text-cyan-300 transition-colors leading-snug truncate">
+              {product.name}
+            </h3>
+          </Link>
           <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
             {product.subtitle}
           </p>

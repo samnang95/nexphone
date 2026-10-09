@@ -341,7 +341,13 @@ export const productService = {
       });
       if (!res.ok) throw new Error("Failed to fetch product");
       const data = await res.json();
-      return data || null;
+      const fallback = FALLBACK_PRODUCTS.find(
+        (p) => p.id === data.id || p.slug === data.slug
+      );
+      return {
+        ...data,
+        imageUrl: data.imageUrl || fallback?.imageUrl,
+      };
     } catch {
       const found = FALLBACK_PRODUCTS.find(
         (p) => p.id === idOrSlug || p.slug === idOrSlug

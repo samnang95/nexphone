@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 import { ROUTES } from "@/routes";
 
 export function Navbar() {
   const { user, isAuthenticated, logout, isLoading } = useAuth();
+  const { openCart, totalItems } = useCart();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -87,6 +89,23 @@ export function Navbar() {
 
         {/* Right Actions / Auth Menu */}
         <div className="flex items-center gap-3">
+          {/* Cart Drawer Trigger */}
+          <button
+            type="button"
+            onClick={openCart}
+            className="relative flex items-center justify-center p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800/80 border border-slate-800 bg-slate-900/60 transition-all focus:outline-none"
+            aria-label="View shopping cart"
+          >
+            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M16 11V7a4 4 0 0 0-8 0v4M5 9h14l1 12H4L5 9z" />
+            </svg>
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 flex h-4 min-w-[16px] px-1 items-center justify-center rounded-full bg-cyan-400 text-[10px] font-black text-slate-950 shadow-md shadow-cyan-400/40 animate-pulse">
+                {totalItems}
+              </span>
+            )}
+          </button>
+
           {isLoading ? (
             <div className="h-8 w-24 animate-pulse rounded-lg bg-slate-800/80" />
           ) : isAuthenticated && user ? (

@@ -650,7 +650,7 @@ app.get("/api/products", (req: Request, res: Response) => {
 
 app.get("/api/products/:id", (req: Request, res: Response) => {
   const { id } = req.params;
-  const product = productsCatalog.find((p) => p.id === id);
+  const product = productsCatalog.find((p) => p.id === id || p.slug === id);
   if (!product) {
     res.status(404).json({ error: "Product not found", id });
     return;

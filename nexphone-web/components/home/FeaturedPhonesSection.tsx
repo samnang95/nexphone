@@ -2,7 +2,9 @@
 
 import React, { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import type { FeaturedPhone } from "@/types/content";
+import { ROUTES } from "@/routes";
 
 interface FeaturedPhonesSectionProps {
   phones: FeaturedPhone[];
@@ -71,7 +73,10 @@ export function FeaturedPhonesSection({ phones, onOpenQuickView }: FeaturedPhone
             className="group relative rounded-3xl bg-gradient-to-b from-slate-900/90 to-slate-950/90 border border-slate-800/80 hover:border-cyan-500/40 transition-all duration-300 flex flex-col justify-between overflow-hidden hover:shadow-2xl hover:shadow-cyan-500/10 hover:-translate-y-1"
           >
             {/* Top Image Preview with Glow */}
-            <div className="relative h-64 w-full bg-gradient-to-b from-slate-800/20 to-transparent p-6 flex items-center justify-center overflow-hidden">
+            <Link
+              href={ROUTES.PRODUCTS.DETAIL(phone.productId || phone.id)}
+              className="relative h-64 w-full bg-gradient-to-b from-slate-800/20 to-transparent p-6 flex items-center justify-center overflow-hidden cursor-pointer"
+            >
               <div className="absolute inset-0 bg-gradient-to-tr from-cyan-500/5 via-transparent to-indigo-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
               
               {/* Badge */}
@@ -96,7 +101,7 @@ export function FeaturedPhonesSection({ phones, onOpenQuickView }: FeaturedPhone
                 unoptimized
                 className="max-h-48 w-auto object-contain scale-95 group-hover:scale-105 transition-transform duration-500 drop-shadow-2xl"
               />
-            </div>
+            </Link>
 
             {/* Content Details */}
             <div className="p-6 pt-2 flex-1 flex flex-col justify-between">
@@ -104,9 +109,11 @@ export function FeaturedPhonesSection({ phones, onOpenQuickView }: FeaturedPhone
                 <div className="text-[10px] font-mono text-cyan-400 uppercase tracking-wider mb-1">
                   {phone.series}
                 </div>
-                <h3 className="text-lg font-bold text-white group-hover:text-cyan-300 transition-colors leading-snug">
-                  {phone.productName}
-                </h3>
+                <Link href={ROUTES.PRODUCTS.DETAIL(phone.productId || phone.id)}>
+                  <h3 className="text-lg font-bold text-white hover:text-cyan-300 transition-colors leading-snug">
+                    {phone.productName}
+                  </h3>
+                </Link>
                 <p className="text-xs text-slate-400 mt-1 line-clamp-2 leading-relaxed">
                   {phone.headline || phone.productSubtitle}
                 </p>
