@@ -1,8 +1,9 @@
 "use client";
 
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import type { PhoneProduct, ColorOption } from "@/types/product";
+import { PhoneViewer3D } from "@/components/viewer-3d/PhoneViewer3D";
 
 interface ImageGallery3DProps {
   product: PhoneProduct;
@@ -13,6 +14,7 @@ interface ImageGallery3DProps {
 export function ImageGallery3D({
   product,
   selectedColor,
+  onSelectColor,
 }: ImageGallery3DProps) {
   // Gallery images list: primary image + angle variations
   const galleryImages = [
@@ -40,167 +42,14 @@ export function ImageGallery3D({
 
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [is3DMode, setIs3DMode] = useState(false);
-  const [isWireframe, setIsWireframe] = useState(false);
-  const [rotationAngle, setRotationAngle] = useState(15);
-  const [isAutoRotating, setIsAutoRotating] = useState(true);
   const [isZoomed, setIsZoomed] = useState(false);
-
-  // 3D Canvas rendering
-  const canvasRef = useRef<HTMLCanvasElement | null>(null);
-
-  useEffect(() => {
-    if (!is3DMode) return;
-
-    let animationFrameId: number;
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    let angle = rotationAngle;
-
-    const render = () => {
-      if (isAutoRotating) {
-        angle = (angle + 0.6) % 360;
-        setRotationAngle(angle);
-      }
-
-      const width = canvas.width;
-      const height = canvas.height;
-      ctx.clearRect(0, 0, width, height);
-
-      const rad = (angle * Math.PI) / 180;
-      const cx = width / 2;
-      const cy = height / 2;
-
-      // Phone 3D Box dimensions
-      const pw = 140;
-      const ph = 260;
-      const pd = 24;
-
-      // Calculate projected vertices
-      const cos = Math.cos(rad);
-      const sin = Math.sin(rad);
-
-      const project = (x: number, y: number, z: number) => {
-        // Rotate around Y-axis
-        const rotX = x * cos + z * sin;
-        const rotZ = -x * sin + z * cos;
-        // Simple perspective
-        const fov = 400;
-        const scale = fov / (fov + rotZ);
-        return {
-          x: cx + rotX * scale,
-          y: cy + y * scale,
-          scale,
-          z: rotZ,
-        };
-      };
-
-      // 8 vertices of the phone body
-      const v = [
-        project(-pw / 2, -ph / 2, -pd / 2),
-        project(pw / 2, -ph / 2, -pd / 2),
-        project(pw / 2, ph / 2, -pd / 2),
-        project(-pw / 2, ph / 2, -pd / 2),
-        project(-pw / 2, -ph / 2, pd / 2),
-        project(pw / 2, -ph / 2, pd / 2),
-        project(pw / 2, ph / 2, pd / 2),
-        project(-pw / 2, ph / 2, pd / 2),
-      ];
-
-      // Draw shadow
-      ctx.beginPath();
-      ctx.ellipse(cx, cy + 180, 110, 30, 0, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(0, 0, 0, 0.4)";
-      ctx.fill();
-
-      // Render wireframe vs solid
-      if (isWireframe) {
-        ctx.strokeStyle = "#06b6d4";
-        ctx.lineWidth = 1.5;
-        const edges = [
-          [0, 1], [1, 2], [2, 3], [3, 0],
-          [4, 5], [5, 6], [6, 7], [7, 4],
-          [0, 4], [1, 5], [2, 6], [3, 7],
-        ];
-        edges.forEach(([p1, p2]) => {
-          ctx.beginPath();
-          ctx.moveTo(v[p1]!.x, v[p1]!.y);
-          ctx.lineTo(v[p2]!.x, v[p2]!.y);
-          ctx.stroke();
-        });
-
-        // Camera module wireframe
-        const c1 = project(-pw / 4, -ph / 2.2, pd / 2);
-        const c2 = project(pw / 4, -ph / 2.2, pd / 2);
-        const c3 = project(pw / 4, -ph / 4, pd / 2);
-        const c4 = project(-pw / 4, -ph / 4, pd / 2);
-        ctx.strokeStyle = "#a855f7";
-        ctx.beginPath();
-        ctx.moveTo(c1.x, c1.y);
-        ctx.lineTo(c2.x, c2.y);
-        ctx.lineTo(c3.x, c3.y);
-        ctx.lineTo(c4.x, c4.y);
-        ctx.closePath();
-        ctx.stroke();
-      } else {
-        // Shaded polygon surfaces
-        const faces = [
-          { pts: [0, 1, 2, 3], color: "#1e293b", normalZ: -cos }, // Back
-          { pts: [4, 5, 6, 7], color: selectedColor.hex || "#090d16", normalZ: cos }, // Front
-          { pts: [0, 1, 5, 4], color: "#334155", normalZ: 0 }, // Top
-          { pts: [3, 2, 6, 7], color: "#0f172a", normalZ: 0 }, // Bottom
-          { pts: [0, 3, 7, 4], color: "#1e293b", normalZ: -sin }, // Left
-          { pts: [1, 2, 6, 5], color: "#475569", normalZ: sin }, // Right
-        ];
-
-        // Sort faces from back to front
-        faces.sort((a, b) => {
-          const zA = a.pts.reduce((sum, i) => sum + v[i]!.z, 0) / 4;
-          const zB = b.pts.reduce((sum, i) => sum + v[i]!.z, 0) / 4;
-          return zB - zA;
-        });
-
-        faces.forEach((face) => {
-          ctx.beginPath();
-          ctx.moveTo(v[face.pts[0]!]!.x, v[face.pts[0]!]!.y);
-          for (let i = 1; i < face.pts.length; i++) {
-            ctx.lineTo(v[face.pts[i]!]!.x, v[face.pts[i]!]!.y);
-          }
-          ctx.closePath();
-
-          ctx.fillStyle = face.color;
-          ctx.fill();
-          ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
-          ctx.lineWidth = 1;
-          ctx.stroke();
-
-          // If front face is visible, draw glowing bezel & UI lines
-          if (face.pts[0] === 4 && face.normalZ > -0.2) {
-            ctx.fillStyle = "#0284c7";
-            ctx.font = "bold 11px monospace";
-            ctx.fillText("NEXOS TITANIUM", v[4]!.x + 12, v[4]!.y + 35);
-          }
-        });
-      }
-
-      animationFrameId = requestAnimationFrame(render);
-    };
-
-    render();
-
-    return () => {
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [is3DMode, isAutoRotating, isWireframe, rotationAngle, selectedColor]);
 
   const activeImage = galleryImages[activeImageIndex] || galleryImages[0]!;
 
   return (
     <div className="flex flex-col gap-4">
       {/* Main Showcase Viewport */}
-      <div className="relative aspect-square w-full rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900/90 via-[#0a0f1d] to-[#070b14] overflow-hidden group shadow-2xl flex items-center justify-center p-6">
+      <div className="relative aspect-square w-full rounded-3xl border border-slate-800 bg-gradient-to-b from-slate-900/90 via-[#0a0f1d] to-[#070b14] overflow-hidden group shadow-2xl flex items-center justify-center">
         {/* Subtle cyber grid background */}
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b0f_1px,transparent_1px),linear-gradient(to_bottom,#1e293b0f_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
 
@@ -211,7 +60,7 @@ export function ImageGallery3D({
         />
 
         {/* Floating Badges */}
-        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5">
+        <div className="absolute top-4 left-4 z-10 flex flex-col gap-1.5 pointer-events-none">
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/80 border border-slate-700/60 backdrop-blur-md text-[10px] font-mono font-semibold text-cyan-400">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-ping" />
             {product.series}
@@ -222,12 +71,12 @@ export function ImageGallery3D({
         </div>
 
         {/* 3D Mode / Zoom Toggle Buttons */}
-        <div className="absolute top-4 right-4 z-10 flex items-center gap-2">
+        <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
           {product.model3D?.enabled && (
             <button
               type="button"
               onClick={() => setIs3DMode(!is3DMode)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-lg backdrop-blur-md ${
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl border text-xs font-bold transition-all shadow-lg backdrop-blur-md ${
                 is3DMode
                   ? "bg-cyan-500 text-slate-950 border-cyan-400 shadow-cyan-500/30"
                   : "bg-slate-900/80 text-slate-300 border-slate-700 hover:text-white hover:border-slate-600"
@@ -256,52 +105,19 @@ export function ImageGallery3D({
           )}
         </div>
 
-        {/* Content Display: 3D Holographic Canvas OR High-Res Photo */}
+        {/* Content Display: Full Three.js 3D Studio OR High-Res Photo */}
         {is3DMode ? (
-          <div className="relative w-full h-full flex flex-col items-center justify-center">
-            <canvas
-              ref={canvasRef}
-              width={420}
-              height={420}
-              className="w-full max-w-[380px] h-auto cursor-grab active:cursor-grabbing"
-              onMouseDown={() => setIsAutoRotating(false)}
-              onMouseUp={() => setIsAutoRotating(true)}
+          <div className="relative w-full h-full">
+            <PhoneViewer3D
+              product={product}
+              initialColor={selectedColor}
+              onColorChange={onSelectColor}
+              className="!h-full !rounded-3xl border-0"
+              enableFullscreen={true}
             />
-
-            {/* 3D Studio Controls Toolbar */}
-            <div className="absolute bottom-4 inset-x-6 flex items-center justify-between p-2 rounded-2xl bg-slate-900/90 border border-slate-800/90 backdrop-blur-lg text-xs">
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => setIsAutoRotating(!isAutoRotating)}
-                  className={`px-2.5 py-1 rounded-lg font-mono text-[11px] transition-colors ${
-                    isAutoRotating
-                      ? "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  {isAutoRotating ? "Auto Orbit ON" : "Orbit Paused"}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setIsWireframe(!isWireframe)}
-                  className={`px-2.5 py-1 rounded-lg font-mono text-[11px] transition-colors ${
-                    isWireframe
-                      ? "bg-purple-500/20 text-purple-400 border border-purple-500/30"
-                      : "text-slate-400 hover:text-white"
-                  }`}
-                >
-                  {isWireframe ? "Wireframe" : "Shaded Mesh"}
-                </button>
-              </div>
-
-              <div className="text-[10px] font-mono text-slate-500 hidden sm:block">
-                {product.model3D.polygonCount?.toLocaleString() || "52,400"} Polys • {product.model3D.fileFormat.toUpperCase()}
-              </div>
-            </div>
           </div>
         ) : (
-          <div className="relative w-full h-full flex items-center justify-center transition-transform duration-500 group-hover:scale-105">
+          <div className="relative w-full h-full flex items-center justify-center p-8 transition-transform duration-500 group-hover:scale-105">
             <Image
               src={activeImage.url}
               alt={`${product.name} - ${activeImage.label}`}

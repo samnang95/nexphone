@@ -11,6 +11,7 @@ export const ROUTES = {
     DETAIL: (idOrSlug: string | number) => `/products/${encodeURIComponent(String(idOrSlug))}`,
     SERIES: (series: string) => `/products?series=${encodeURIComponent(series)}`,
   },
+  EXPERIENCE_3D: "/viewer",
   CART: "/cart",
   CHECKOUT: "/checkout",
   ORDERS: {

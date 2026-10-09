@@ -141,6 +141,13 @@ export function ProductCard({
           </div>
 
           <div className="mt-4 flex items-center gap-2">
+            <Link
+              href={ROUTES.EXPERIENCE_3D}
+              className="p-2.5 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 transition-all font-mono text-[10px] font-bold"
+              title="Inspect in 3D Studio"
+            >
+              3D
+            </Link>
             <button
               type="button"
               onClick={() => onQuickView(product)}
@@ -260,16 +267,25 @@ export function ProductCard({
             </div>
           </div>
 
-          <button
-            type="button"
-            onClick={() => onQuickView(product)}
-            className="px-3.5 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-cyan-500/20 active:scale-95 flex items-center gap-1.5"
-          >
-            <span>Quick View</span>
-            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
-            </svg>
-          </button>
+          <div className="flex items-center gap-2">
+            <Link
+              href={ROUTES.EXPERIENCE_3D}
+              className="p-2 rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700 hover:border-cyan-400 text-slate-300 hover:text-cyan-400 transition-all font-mono text-[10px] font-bold"
+              title="Inspect in 3D Studio"
+            >
+              3D
+            </Link>
+            <button
+              type="button"
+              onClick={() => onQuickView(product)}
+              className="px-3 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md shadow-cyan-500/20 active:scale-95 flex items-center gap-1.5"
+            >
+              <span>Quick View</span>
+              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>

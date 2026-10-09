@@ -79,6 +79,13 @@ export function Navbar() {
               Enterprise Fleet
             </Link>
             <Link
+              href={ROUTES.EXPERIENCE_3D}
+              className="rounded-lg px-3 py-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 hover:bg-indigo-500/10 transition-colors flex items-center gap-1.5"
+            >
+              <span className="flex h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+              <span>3D Studio</span>
+            </Link>
+            <Link
               href="/#deals-section"
               className="rounded-lg px-3 py-1.5 text-xs font-semibold text-cyan-400 hover:text-cyan-300 hover:bg-slate-800/60 transition-colors"
             >
@@ -266,6 +273,16 @@ export function Navbar() {
             className="block rounded-lg px-3 py-2 text-xs font-medium text-slate-300 hover:bg-slate-800"
           >
             Enterprise Fleet
+          </Link>
+          <Link
+            href={ROUTES.EXPERIENCE_3D}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-xs font-medium text-indigo-400 hover:bg-slate-800 flex items-center justify-between"
+          >
+            <span>3D Studio</span>
+            <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">
+              360°
+            </span>
           </Link>
           <Link
             href="/#deals-section"
