@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import { useWishlist } from "@/context/WishlistContext";
+import { useCart } from "@/context/CartContext";
 
 export interface QuickViewPhone {
   id?: string;
@@ -22,6 +23,7 @@ interface PhoneQuickViewModalProps {
 
 export function PhoneQuickViewModal({ phone, onClose }: PhoneQuickViewModalProps) {
   const { toggleWishlist, isInWishlist } = useWishlist();
+  const { addItem, openCart } = useCart();
   const [selectedStorage, setSelectedStorage] = useState<string>("512GB");
   const [selectedColor, setSelectedColor] = useState<string>("Titanium Natural");
   const [isReserved, setIsReserved] = useState<boolean>(false);
@@ -63,11 +65,50 @@ export function PhoneQuickViewModal({ phone, onClose }: PhoneQuickViewModalProps
   };
 
   const handleReserve = () => {
+    if (!phone) return;
+    const colorObj = colors.find((c) => c.name === selectedColor) || colors[0]!;
+    const storageObj = storageOptions.find((s) => s.label === selectedStorage) || storageOptions[0]!;
+
+    addItem({
+      productId: phoneId,
+      productName: phone.name,
+      productSlug: phoneId,
+      productImage: phone.image,
+      series: phone.series || "Flagship Series",
+      color: {
+        id: colorObj.name.toLowerCase().replace(/\s+/g, "-"),
+        name: colorObj.name,
+        hex: colorObj.hex,
+      },
+      storage: {
+        id: storageObj.label.toLowerCase(),
+        capacity: storageObj.label,
+        ram: "16GB",
+        sku: `NX-${phoneId.slice(0, 4).toUpperCase()}-${storageObj.label}`,
+        price: totalPrice,
+      },
+      unitPrice: totalPrice,
+      quantity: 1,
+      availableColors: colors.map((c) => ({
+        id: c.name.toLowerCase().replace(/\s+/g, "-"),
+        name: c.name,
+        hex: c.hex,
+      })),
+      availableStorage: storageOptions.map((s) => ({
+        id: s.label.toLowerCase(),
+        capacity: s.label,
+        ram: "16GB",
+        sku: `NX-${phoneId.slice(0, 4).toUpperCase()}-${s.label}`,
+        price: phone.price + s.addPrice,
+      })),
+    });
+
     setIsReserved(true);
     setTimeout(() => {
       setIsReserved(false);
       onClose();
-    }, 2000);
+      openCart();
+    }, 1000);
   };
 
   return (

@@ -353,6 +353,18 @@ export function Navbar() {
             )}
           </Link>
           <Link
+            href={ROUTES.CART}
+            onClick={() => setIsMobileMenuOpen(false)}
+            className="block rounded-lg px-3 py-2 text-xs font-medium text-cyan-300 hover:bg-slate-800 flex items-center justify-between"
+          >
+            <span>Hardware Cart</span>
+            {totalItems > 0 && (
+              <span className="text-[10px] px-2 py-0.5 rounded bg-cyan-500/20 text-cyan-300 font-mono">
+                {totalItems}
+              </span>
+            )}
+          </Link>
+          <Link
             href="/#deals-section"
             onClick={() => setIsMobileMenuOpen(false)}
             className="block rounded-lg px-3 py-2 text-xs font-medium text-cyan-400 hover:bg-slate-800"

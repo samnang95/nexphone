@@ -43,6 +43,8 @@ export function CompareTable({
       storage,
       unitPrice: storage.price,
       quantity: 1,
+      availableColors: product.colors,
+      availableStorage: product.storageOptions,
     });
 
     setAddedItemMap((prev) => ({ ...prev, [product.id]: true }));

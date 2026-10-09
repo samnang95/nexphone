@@ -48,6 +48,8 @@ export function ViewerPageClient({ products }: ViewerPageClientProps) {
       storage,
       unitPrice: storage.price,
       quantity: 1,
+      availableColors: selectedProduct.colors,
+      availableStorage: selectedProduct.storageOptions,
     });
 
     openCart();

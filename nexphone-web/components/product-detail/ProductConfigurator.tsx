@@ -64,6 +64,8 @@ export function ProductConfigurator({
       storage: selectedStorage,
       unitPrice,
       quantity,
+      availableColors: product.colors,
+      availableStorage: product.storageOptions,
     });
 
     setIsAddedFeedback(true);

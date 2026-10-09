@@ -3,7 +3,7 @@ import type { PhoneProduct, CatalogFilterState } from "@/types/product";
 
 const API_BASE = appConfig.apiUrl.replace(/\/api\/?$/, "");
 
-const FALLBACK_PRODUCTS: PhoneProduct[] = [
+export const FALLBACK_PRODUCTS: PhoneProduct[] = [
   {
     id: "prod-001",
     name: "NexPhone Pro Max X",
