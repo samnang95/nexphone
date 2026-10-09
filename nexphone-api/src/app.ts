@@ -4797,10 +4797,813 @@ app.get("/api/promotions-metrics", (_req: Request, res: Response) => {
   });
 });
 
+// ==========================================
+// CONTENT MANAGEMENT STORE & ENDPOINTS
+// ==========================================
 
+export interface HomepageBannerRecord {
+  id: string;
+  title: string;
+  subtitle: string;
+  badge: string;
+  primaryCta: { label: string; url: string };
+  secondaryCta?: { label: string; url: string };
+  imageUrl: string;
+  gradientOverlay: string;
+  alignment: "left" | "center" | "right";
+  displayOrder: number;
+  status: "active" | "scheduled" | "draft" | "hidden";
+  startDate: string;
+  endDate?: string | null;
+  impressions: number;
+  clicks: number;
+  ctr: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
+export interface FeaturedPhoneRecord {
+  id: string;
+  productId: string;
+  productName: string;
+  productSubtitle: string;
+  productPrice: number;
+  productImage: string;
+  series: string;
+  badge: string;
+  headline: string;
+  displayOrder: number;
+  status: "active" | "hidden";
+  rating: number;
+  highlightSpecs: string[];
+  createdAt: string;
+  updatedAt: string;
+}
 
+export interface NewArrivalRecord {
+  id: string;
+  productId: string;
+  productName: string;
+  productSubtitle: string;
+  productPrice: number;
+  productImage: string;
+  series: string;
+  releaseDate: string;
+  tag: string;
+  isPreOrder: boolean;
+  displayOrder: number;
+  status: "active" | "hidden";
+  initialStock: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
+export interface BestSellerRecord {
+  id: string;
+  productId: string;
+  productName: string;
+  productSubtitle: string;
+  productPrice: number;
+  productImage: string;
+  series: string;
+  rank: number;
+  unitsSold: number;
+  badge: string;
+  satisfactionRate: number;
+  monthlyGrowth: number;
+  status: "active" | "hidden";
+  createdAt: string;
+  updatedAt: string;
+}
 
+export interface PromotionalSectionRecord {
+  id: string;
+  sectionKey: string;
+  title: string;
+  subtitle: string;
+  type: "split_banner" | "feature_grid" | "countdown_bar" | "trust_badges" | "callout_card";
+  ctaLabel: string;
+  ctaUrl: string;
+  imageUrl?: string;
+  accentColor: "indigo" | "cyan" | "emerald" | "amber" | "rose" | "purple";
+  displayOrder: number;
+  status: "active" | "hidden";
+  features?: Array<{ icon: string; title: string; desc: string }>;
+  createdAt: string;
+  updatedAt: string;
+}
 
+const contentNow = Date.now();
+const DAY_MS = 1000 * 60 * 60 * 24;
 
+export const homepageBannersStore: HomepageBannerRecord[] = [
+  {
+    id: "banner-001",
+    title: "NexPhone 15 Pro Max",
+    subtitle: "Titanium aerospace chassis with uninterrupted global satellite VoIP everywhere on Earth.",
+    badge: "Flagship Premiere",
+    primaryCta: { label: "Configure & Order", url: "/products/p1" },
+    secondaryCta: { label: "Explore 3D Digital Twin", url: "/products/p1" },
+    imageUrl: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=1200&q=80",
+    gradientOverlay: "from-indigo-950/95 via-slate-900/80 to-transparent",
+    alignment: "left",
+    displayOrder: 1,
+    status: "active",
+    startDate: new Date(contentNow - 14 * DAY_MS).toISOString(),
+    endDate: new Date(contentNow + 30 * DAY_MS).toISOString(),
+    impressions: 48200,
+    clicks: 4580,
+    ctr: 9.5,
+    createdAt: new Date(contentNow - 14 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 1 * DAY_MS).toISOString(),
+  },
+  {
+    id: "banner-002",
+    title: "Enterprise Fleet Edge Pack",
+    subtitle: "Zero-touch remote eSIM bulk provisioning with guaranteed 99.999% encrypted uptime.",
+    badge: "Enterprise Edition",
+    primaryCta: { label: "Deploy Corporate Fleet", url: "/products/p2" },
+    secondaryCta: { label: "Request Volume Quote", url: "/orders" },
+    imageUrl: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=1200&q=80",
+    gradientOverlay: "from-purple-950/95 via-slate-900/80 to-transparent",
+    alignment: "left",
+    displayOrder: 2,
+    status: "active",
+    startDate: new Date(contentNow - 10 * DAY_MS).toISOString(),
+    endDate: new Date(contentNow + 40 * DAY_MS).toISOString(),
+    impressions: 34100,
+    clicks: 2980,
+    ctr: 8.7,
+    createdAt: new Date(contentNow - 10 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 2 * DAY_MS).toISOString(),
+  },
+  {
+    id: "banner-003",
+    title: "Spring Fleet Expo 2026",
+    subtitle: "Sitewide promotional discount of 12% plus free Satellite VoIP trial for 1 full year.",
+    badge: "Active Sale Event",
+    primaryCta: { label: "Shop Spring Specials", url: "/promotions" },
+    secondaryCta: { label: "View Coupon Details", url: "/promotions" },
+    imageUrl: "https://images.unsplash.com/photo-1550745165-9bc0b252726f?auto=format&fit=crop&w=1200&q=80",
+    gradientOverlay: "from-cyan-950/95 via-slate-900/80 to-transparent",
+    alignment: "center",
+    displayOrder: 3,
+    status: "active",
+    startDate: new Date(contentNow - 3 * DAY_MS).toISOString(),
+    endDate: new Date(contentNow + 4 * DAY_MS).toISOString(),
+    impressions: 21900,
+    clicks: 2450,
+    ctr: 11.2,
+    createdAt: new Date(contentNow - 3 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow).toISOString(),
+  },
+  {
+    id: "banner-004",
+    title: "NexPhone Fold Ultra",
+    subtitle: "Seamless Dual-OLED foldable architecture built for high-throughput mobile telemetry analysts.",
+    badge: "Upcoming Drop",
+    primaryCta: { label: "Join VIP Waitlist", url: "/products/p4" },
+    imageUrl: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=1200&q=80",
+    gradientOverlay: "from-amber-950/95 via-slate-900/80 to-transparent",
+    alignment: "left",
+    displayOrder: 4,
+    status: "scheduled",
+    startDate: new Date(contentNow + 5 * DAY_MS).toISOString(),
+    endDate: new Date(contentNow + 35 * DAY_MS).toISOString(),
+    impressions: 0,
+    clicks: 0,
+    ctr: 0.0,
+    createdAt: new Date(contentNow - 1 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 1 * DAY_MS).toISOString(),
+  },
+];
+
+export const featuredPhonesStore: FeaturedPhoneRecord[] = [
+  {
+    id: "feat-001",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max",
+    productSubtitle: "Aerospace Titanium & Satellite Transceiver",
+    productPrice: 1399,
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80",
+    series: "Pro Series",
+    badge: "Editor's Choice",
+    headline: "The ultimate enterprise flagship with mil-spec durability.",
+    displayOrder: 1,
+    status: "active",
+    rating: 4.9,
+    highlightSpecs: ["Satellite VoIP Mesh", "Grade 5 Titanium", "72h Fleet Battery"],
+    createdAt: new Date(contentNow - 30 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 2 * DAY_MS).toISOString(),
+  },
+  {
+    id: "feat-002",
+    productId: "p2",
+    productName: "NexPhone Enterprise Edge",
+    productSubtitle: "Corporate Fleet 5-Device Bundle Pack",
+    productPrice: 4299,
+    productImage: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80",
+    series: "Enterprise",
+    badge: "Fleet Standard",
+    headline: "Pre-configured for zero-touch cloud enrollment.",
+    displayOrder: 2,
+    status: "active",
+    rating: 4.8,
+    highlightSpecs: ["Remote eSIM Provisioning", "End-to-End Encryption", "Fleet SLA Support"],
+    createdAt: new Date(contentNow - 25 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 1 * DAY_MS).toISOString(),
+  },
+  {
+    id: "feat-003",
+    productId: "p4",
+    productName: "NexPhone Fold Ultra",
+    productSubtitle: "Titanium Dual-Screen Precision Hinge",
+    productPrice: 1799,
+    productImage: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=600&q=80",
+    series: "Foldable",
+    badge: "Titanium Foldable",
+    headline: "Transforms from compact phone into an 8-inch tablet.",
+    displayOrder: 3,
+    status: "active",
+    rating: 4.7,
+    highlightSpecs: ["120Hz Dual AMOLED", "Zero-Crease Hinge", "Multi-Window VoIP"],
+    createdAt: new Date(contentNow - 15 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 3 * DAY_MS).toISOString(),
+  },
+  {
+    id: "feat-004",
+    productId: "p3",
+    productName: "NexPhone Lite",
+    productSubtitle: "High-Efficiency Everyday Communicator",
+    productPrice: 699,
+    productImage: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=600&q=80",
+    series: "Lite",
+    badge: "Best Value",
+    headline: "Flagship performance in a featherweight frame.",
+    displayOrder: 4,
+    status: "active",
+    rating: 4.6,
+    highlightSpecs: ["Snapdragon 8 Gen 3", "All-Day Battery", "Fast 65W GaN Charge"],
+    createdAt: new Date(contentNow - 20 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 4 * DAY_MS).toISOString(),
+  },
+];
+
+export const newArrivalsStore: NewArrivalRecord[] = [
+  {
+    id: "new-001",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max (Titanium Natural)",
+    productSubtitle: "New Raw Polished Finish with Ceramic Shield",
+    productPrice: 1399,
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80",
+    series: "Pro Series",
+    releaseDate: new Date(contentNow - 5 * DAY_MS).toISOString(),
+    tag: "Just Dropped",
+    isPreOrder: false,
+    displayOrder: 1,
+    status: "active",
+    initialStock: 450,
+    createdAt: new Date(contentNow - 5 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow).toISOString(),
+  },
+  {
+    id: "new-002",
+    productId: "p4",
+    productName: "NexPhone Fold Ultra Dual-SIM",
+    productSubtitle: "Global Dual Active Satellite & 5G mmWave",
+    productPrice: 1799,
+    productImage: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=600&q=80",
+    series: "Foldable",
+    releaseDate: new Date(contentNow + 12 * DAY_MS).toISOString(),
+    tag: "Pre-Order Now",
+    isPreOrder: true,
+    displayOrder: 2,
+    status: "active",
+    initialStock: 200,
+    createdAt: new Date(contentNow - 8 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 1 * DAY_MS).toISOString(),
+  },
+  {
+    id: "new-003",
+    productId: "acc-01",
+    productName: "NexPhone Fleet Inductive Charger Hub",
+    productSubtitle: "Multi-device 100W wireless dock with telemetry LED",
+    productPrice: 249,
+    productImage: "https://images.unsplash.com/photo-1586953208448-b95a79798f07?auto=format&fit=crop&w=600&q=80",
+    series: "Accessories",
+    releaseDate: new Date(contentNow - 3 * DAY_MS).toISOString(),
+    tag: "New Hardware",
+    isPreOrder: false,
+    displayOrder: 3,
+    status: "active",
+    initialStock: 800,
+    createdAt: new Date(contentNow - 3 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow).toISOString(),
+  },
+  {
+    id: "new-004",
+    productId: "p3",
+    productName: "NexPhone Lite (Midnight Navy Edition)",
+    productSubtitle: "Special edition anodized aerospace aluminum",
+    productPrice: 699,
+    productImage: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=600&q=80",
+    series: "Lite",
+    releaseDate: new Date(contentNow - 2 * DAY_MS).toISOString(),
+    tag: "New Colorway",
+    isPreOrder: false,
+    displayOrder: 4,
+    status: "active",
+    initialStock: 350,
+    createdAt: new Date(contentNow - 2 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow).toISOString(),
+  },
+];
+
+export const bestSellersStore: BestSellerRecord[] = [
+  {
+    id: "best-001",
+    productId: "p1",
+    productName: "NexPhone 15 Pro Max",
+    productSubtitle: "Top-selling enterprise executive communicator",
+    productPrice: 1399,
+    productImage: "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80",
+    series: "Pro Series",
+    rank: 1,
+    unitsSold: 38420,
+    badge: "#1 Fleet Bestseller",
+    satisfactionRate: 99.2,
+    monthlyGrowth: 18.5,
+    status: "active",
+    createdAt: new Date(contentNow - 90 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 2 * DAY_MS).toISOString(),
+  },
+  {
+    id: "best-002",
+    productId: "p2",
+    productName: "NexPhone Enterprise Edge",
+    productSubtitle: "Leading corporate bulk deployment hardware pack",
+    productPrice: 4299,
+    productImage: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80",
+    series: "Enterprise",
+    rank: 2,
+    unitsSold: 24190,
+    badge: "Top Corporate Volume",
+    satisfactionRate: 98.8,
+    monthlyGrowth: 14.2,
+    status: "active",
+    createdAt: new Date(contentNow - 80 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 1 * DAY_MS).toISOString(),
+  },
+  {
+    id: "best-003",
+    productId: "p3",
+    productName: "NexPhone Lite",
+    productSubtitle: "Universal commercial & education favorite",
+    productPrice: 699,
+    productImage: "https://images.unsplash.com/photo-1565849904461-04a58ad377e0?auto=format&fit=crop&w=600&q=80",
+    series: "Lite",
+    rank: 3,
+    unitsSold: 19300,
+    badge: "Value Leader",
+    satisfactionRate: 97.4,
+    monthlyGrowth: 9.8,
+    status: "active",
+    createdAt: new Date(contentNow - 70 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 3 * DAY_MS).toISOString(),
+  },
+  {
+    id: "best-004",
+    productId: "p4",
+    productName: "NexPhone Fold Ultra",
+    productSubtitle: "Breakthrough foldable productivity powerhouse",
+    productPrice: 1799,
+    productImage: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=600&q=80",
+    series: "Foldable",
+    rank: 4,
+    unitsSold: 12850,
+    badge: "Fastest Growing",
+    satisfactionRate: 98.1,
+    monthlyGrowth: 26.4,
+    status: "active",
+    createdAt: new Date(contentNow - 40 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 1 * DAY_MS).toISOString(),
+  },
+];
+
+export const promotionalSectionsStore: PromotionalSectionRecord[] = [
+  {
+    id: "sec-001",
+    sectionKey: "trade_in_bar",
+    title: "Trade In & Upgrade Your Fleet",
+    subtitle: "Get up to $650 instant credit when exchanging qualified previous-generation hardware devices.",
+    type: "split_banner",
+    ctaLabel: "Estimate Fleet Trade-In Value",
+    ctaUrl: "/orders",
+    imageUrl: "https://images.unsplash.com/photo-1580910051074-3eb694886505?auto=format&fit=crop&w=600&q=80",
+    accentColor: "indigo",
+    displayOrder: 1,
+    status: "active",
+    features: [
+      { icon: "shield", title: "Guaranteed Valuation", desc: "Lock in trade-in prices for 30 calendar days." },
+      { icon: "refresh", title: "Direct Credit", desc: "Instant checkout offset against new hardware purchases." },
+      { icon: "trash", title: "Certified Data Wipe", desc: "DoD 5220.22-M compliant permanent memory sanitization." },
+    ],
+    createdAt: new Date(contentNow - 30 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 1 * DAY_MS).toISOString(),
+  },
+  {
+    id: "sec-002",
+    sectionKey: "satellite_voip_grid",
+    title: "Unbroken Satellite VoIP Infrastructure",
+    subtitle: "NexPhone mesh networks connect directly to low-earth orbit constellations for zero dead zones anywhere on Earth.",
+    type: "feature_grid",
+    ctaLabel: "View Telemetry Coverage Map",
+    ctaUrl: "/telemetry",
+    accentColor: "cyan",
+    displayOrder: 2,
+    status: "active",
+    features: [
+      { icon: "signal", title: "Zero Signal Blindspots", desc: "Autonomous satellite handoff in remote ocean, desert, or mountain zones." },
+      { icon: "lock", title: "Post-Quantum Cryptography", desc: "Kyber-1024 encryption shielding all voice calls and packet telemetry." },
+      { icon: "cpu", title: "Sub-20ms VoIP Latency", desc: "Direct packet acceleration routing to nearest satellite gateway." },
+    ],
+    createdAt: new Date(contentNow - 25 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 2 * DAY_MS).toISOString(),
+  },
+  {
+    id: "sec-003",
+    sectionKey: "enterprise_fleet_block",
+    title: "Enterprise Flexible Fleet Financing",
+    subtitle: "Equip your workforce with 0% APR for 24 months, complete with enterprise swap warranty replacement within 24 hours.",
+    type: "callout_card",
+    ctaLabel: "Speak with Fleet Advisor",
+    ctaUrl: "/customers",
+    accentColor: "emerald",
+    displayOrder: 3,
+    status: "active",
+    features: [
+      { icon: "check", title: "0% Corporate APR", desc: "Predictable monthly hardware expenses with zero hidden leasing fees." },
+      { icon: "truck", title: "24-Hour Hot Swap", desc: "Immediate overnight hardware replacements for critical personnel." },
+    ],
+    createdAt: new Date(contentNow - 20 * DAY_MS).toISOString(),
+    updatedAt: new Date(contentNow - 3 * DAY_MS).toISOString(),
+  },
+];
+
+// --- Banners API ---
+app.get("/api/content/banners", (_req: Request, res: Response) => {
+  const sorted = [...homepageBannersStore].sort((a, b) => a.displayOrder - b.displayOrder);
+  res.json(sorted);
+});
+
+app.post("/api/content/banners", (req: Request, res: Response) => {
+  const body = req.body || {};
+  if (!body.title) {
+    res.status(400).json({ error: "Banner title is required" });
+    return;
+  }
+  const now = new Date().toISOString();
+  const newBanner: HomepageBannerRecord = {
+    id: `banner-${Date.now().toString(36)}`,
+    title: String(body.title).trim(),
+    subtitle: String(body.subtitle || "").trim(),
+    badge: String(body.badge || "Featured").trim(),
+    primaryCta: body.primaryCta || { label: "Learn More", url: "/products" },
+    secondaryCta: body.secondaryCta,
+    imageUrl: String(body.imageUrl || "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=1200&q=80"),
+    gradientOverlay: String(body.gradientOverlay || "from-indigo-950/95 via-slate-900/80 to-transparent"),
+    alignment: body.alignment || "left",
+    displayOrder: Number(body.displayOrder) || homepageBannersStore.length + 1,
+    status: body.status || "active",
+    startDate: body.startDate || now,
+    endDate: body.endDate || null,
+    impressions: 0,
+    clicks: 0,
+    ctr: 0.0,
+    createdAt: now,
+    updatedAt: now,
+  };
+  homepageBannersStore.push(newBanner);
+  res.status(201).json(newBanner);
+});
+
+app.put("/api/content/banners/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = homepageBannersStore.findIndex((b) => b.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Banner not found" });
+    return;
+  }
+  const current = homepageBannersStore[index]!;
+  const body = req.body || {};
+  const updated: HomepageBannerRecord = {
+    ...current,
+    title: body.title !== undefined ? String(body.title).trim() : current.title,
+    subtitle: body.subtitle !== undefined ? String(body.subtitle).trim() : current.subtitle,
+    badge: body.badge !== undefined ? String(body.badge).trim() : current.badge,
+    primaryCta: body.primaryCta || current.primaryCta,
+    secondaryCta: body.secondaryCta !== undefined ? body.secondaryCta : current.secondaryCta,
+    imageUrl: body.imageUrl || current.imageUrl,
+    gradientOverlay: body.gradientOverlay || current.gradientOverlay,
+    alignment: body.alignment || current.alignment,
+    displayOrder: body.displayOrder !== undefined ? Number(body.displayOrder) : current.displayOrder,
+    status: body.status || current.status,
+    startDate: body.startDate || current.startDate,
+    endDate: body.endDate !== undefined ? body.endDate : current.endDate,
+    updatedAt: new Date().toISOString(),
+  };
+  homepageBannersStore[index] = updated;
+  res.json(updated);
+});
+
+app.delete("/api/content/banners/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = homepageBannersStore.findIndex((b) => b.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Banner not found" });
+    return;
+  }
+  const [deleted] = homepageBannersStore.splice(index, 1);
+  res.json({ message: "Banner deleted", banner: deleted });
+});
+
+// --- Featured Phones API ---
+app.get("/api/content/featured", (_req: Request, res: Response) => {
+  const sorted = [...featuredPhonesStore].sort((a, b) => a.displayOrder - b.displayOrder);
+  res.json(sorted);
+});
+
+app.post("/api/content/featured", (req: Request, res: Response) => {
+  const body = req.body || {};
+  const now = new Date().toISOString();
+  const newFeatured: FeaturedPhoneRecord = {
+    id: `feat-${Date.now().toString(36)}`,
+    productId: String(body.productId || "p1"),
+    productName: String(body.productName || "NexPhone Pro"),
+    productSubtitle: String(body.productSubtitle || "Featured Flagship"),
+    productPrice: Number(body.productPrice) || 1199,
+    productImage: String(body.productImage || "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80"),
+    series: String(body.series || "Pro Series"),
+    badge: String(body.badge || "Featured").trim(),
+    headline: String(body.headline || "Enterprise grade smartphone").trim(),
+    displayOrder: Number(body.displayOrder) || featuredPhonesStore.length + 1,
+    status: body.status || "active",
+    rating: Number(body.rating) || 4.8,
+    highlightSpecs: Array.isArray(body.highlightSpecs) ? body.highlightSpecs : ["Satellite VoIP", "Titanium Frame"],
+    createdAt: now,
+    updatedAt: now,
+  };
+  featuredPhonesStore.push(newFeatured);
+  res.status(201).json(newFeatured);
+});
+
+app.put("/api/content/featured/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = featuredPhonesStore.findIndex((f) => f.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Featured phone entry not found" });
+    return;
+  }
+  const current = featuredPhonesStore[index]!;
+  const body = req.body || {};
+  const updated: FeaturedPhoneRecord = {
+    ...current,
+    badge: body.badge !== undefined ? String(body.badge).trim() : current.badge,
+    headline: body.headline !== undefined ? String(body.headline).trim() : current.headline,
+    displayOrder: body.displayOrder !== undefined ? Number(body.displayOrder) : current.displayOrder,
+    status: body.status || current.status,
+    highlightSpecs: Array.isArray(body.highlightSpecs) ? body.highlightSpecs : current.highlightSpecs,
+    updatedAt: new Date().toISOString(),
+  };
+  featuredPhonesStore[index] = updated;
+  res.json(updated);
+});
+
+app.delete("/api/content/featured/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = featuredPhonesStore.findIndex((f) => f.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Featured phone entry not found" });
+    return;
+  }
+  const [deleted] = featuredPhonesStore.splice(index, 1);
+  res.json({ message: "Featured phone removed", item: deleted });
+});
+
+// --- New Arrivals API ---
+app.get("/api/content/new-arrivals", (_req: Request, res: Response) => {
+  const sorted = [...newArrivalsStore].sort((a, b) => a.displayOrder - b.displayOrder);
+  res.json(sorted);
+});
+
+app.post("/api/content/new-arrivals", (req: Request, res: Response) => {
+  const body = req.body || {};
+  const now = new Date().toISOString();
+  const newArrival: NewArrivalRecord = {
+    id: `new-${Date.now().toString(36)}`,
+    productId: String(body.productId || "p1"),
+    productName: String(body.productName || "New Release"),
+    productSubtitle: String(body.productSubtitle || "Latest Hardware Drop"),
+    productPrice: Number(body.productPrice) || 999,
+    productImage: String(body.productImage || "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80"),
+    series: String(body.series || "Pro Series"),
+    releaseDate: body.releaseDate || now,
+    tag: String(body.tag || "Just Dropped").trim(),
+    isPreOrder: Boolean(body.isPreOrder),
+    displayOrder: Number(body.displayOrder) || newArrivalsStore.length + 1,
+    status: body.status || "active",
+    initialStock: Number(body.initialStock) || 500,
+    createdAt: now,
+    updatedAt: now,
+  };
+  newArrivalsStore.push(newArrival);
+  res.status(201).json(newArrival);
+});
+
+app.put("/api/content/new-arrivals/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = newArrivalsStore.findIndex((n) => n.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "New arrival not found" });
+    return;
+  }
+  const current = newArrivalsStore[index]!;
+  const body = req.body || {};
+  const updated: NewArrivalRecord = {
+    ...current,
+    tag: body.tag !== undefined ? String(body.tag).trim() : current.tag,
+    isPreOrder: body.isPreOrder !== undefined ? Boolean(body.isPreOrder) : current.isPreOrder,
+    displayOrder: body.displayOrder !== undefined ? Number(body.displayOrder) : current.displayOrder,
+    status: body.status || current.status,
+    updatedAt: new Date().toISOString(),
+  };
+  newArrivalsStore[index] = updated;
+  res.json(updated);
+});
+
+app.delete("/api/content/new-arrivals/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = newArrivalsStore.findIndex((n) => n.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "New arrival not found" });
+    return;
+  }
+  const [deleted] = newArrivalsStore.splice(index, 1);
+  res.json({ message: "New arrival removed", item: deleted });
+});
+
+// --- Best Sellers API ---
+app.get("/api/content/best-sellers", (_req: Request, res: Response) => {
+  const sorted = [...bestSellersStore].sort((a, b) => a.rank - b.rank);
+  res.json(sorted);
+});
+
+app.post("/api/content/best-sellers", (req: Request, res: Response) => {
+  const body = req.body || {};
+  const now = new Date().toISOString();
+  const newBestSeller: BestSellerRecord = {
+    id: `best-${Date.now().toString(36)}`,
+    productId: String(body.productId || "p1"),
+    productName: String(body.productName || "Best Selling Model"),
+    productSubtitle: String(body.productSubtitle || "Top Volume Device"),
+    productPrice: Number(body.productPrice) || 1299,
+    productImage: String(body.productImage || "https://images.unsplash.com/photo-1592750475338-74b7b21085ab?auto=format&fit=crop&w=600&q=80"),
+    series: String(body.series || "Pro Series"),
+    rank: Number(body.rank) || bestSellersStore.length + 1,
+    unitsSold: Number(body.unitsSold) || 10000,
+    badge: String(body.badge || "Top Seller").trim(),
+    satisfactionRate: Number(body.satisfactionRate) || 98.5,
+    monthlyGrowth: Number(body.monthlyGrowth) || 12.0,
+    status: body.status || "active",
+    createdAt: now,
+    updatedAt: now,
+  };
+  bestSellersStore.push(newBestSeller);
+  res.status(201).json(newBestSeller);
+});
+
+app.put("/api/content/best-sellers/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = bestSellersStore.findIndex((b) => b.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Best seller not found" });
+    return;
+  }
+  const current = bestSellersStore[index]!;
+  const body = req.body || {};
+  const updated: BestSellerRecord = {
+    ...current,
+    rank: body.rank !== undefined ? Number(body.rank) : current.rank,
+    badge: body.badge !== undefined ? String(body.badge).trim() : current.badge,
+    unitsSold: body.unitsSold !== undefined ? Number(body.unitsSold) : current.unitsSold,
+    status: body.status || current.status,
+    updatedAt: new Date().toISOString(),
+  };
+  bestSellersStore[index] = updated;
+  res.json(updated);
+});
+
+app.delete("/api/content/best-sellers/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = bestSellersStore.findIndex((b) => b.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Best seller not found" });
+    return;
+  }
+  const [deleted] = bestSellersStore.splice(index, 1);
+  res.json({ message: "Best seller removed", item: deleted });
+});
+
+// --- Promotional Sections API ---
+app.get("/api/content/promo-sections", (_req: Request, res: Response) => {
+  const sorted = [...promotionalSectionsStore].sort((a, b) => a.displayOrder - b.displayOrder);
+  res.json(sorted);
+});
+
+app.post("/api/content/promo-sections", (req: Request, res: Response) => {
+  const body = req.body || {};
+  const now = new Date().toISOString();
+  const newSection: PromotionalSectionRecord = {
+    id: `sec-${Date.now().toString(36)}`,
+    sectionKey: String(body.sectionKey || `section_${Date.now().toString(36)}`),
+    title: String(body.title || "Promotional Block"),
+    subtitle: String(body.subtitle || ""),
+    type: body.type || "split_banner",
+    ctaLabel: String(body.ctaLabel || "Learn More"),
+    ctaUrl: String(body.ctaUrl || "/products"),
+    imageUrl: body.imageUrl,
+    accentColor: body.accentColor || "indigo",
+    displayOrder: Number(body.displayOrder) || promotionalSectionsStore.length + 1,
+    status: body.status || "active",
+    features: Array.isArray(body.features) ? body.features : [],
+    createdAt: now,
+    updatedAt: now,
+  };
+  promotionalSectionsStore.push(newSection);
+  res.status(201).json(newSection);
+});
+
+app.put("/api/content/promo-sections/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = promotionalSectionsStore.findIndex((s) => s.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Promotional section not found" });
+    return;
+  }
+  const current = promotionalSectionsStore[index]!;
+  const body = req.body || {};
+  const updated: PromotionalSectionRecord = {
+    ...current,
+    title: body.title !== undefined ? String(body.title).trim() : current.title,
+    subtitle: body.subtitle !== undefined ? String(body.subtitle).trim() : current.subtitle,
+    ctaLabel: body.ctaLabel !== undefined ? String(body.ctaLabel).trim() : current.ctaLabel,
+    ctaUrl: body.ctaUrl !== undefined ? String(body.ctaUrl).trim() : current.ctaUrl,
+    accentColor: body.accentColor || current.accentColor,
+    displayOrder: body.displayOrder !== undefined ? Number(body.displayOrder) : current.displayOrder,
+    status: body.status || current.status,
+    updatedAt: new Date().toISOString(),
+  };
+  promotionalSectionsStore[index] = updated;
+  res.json(updated);
+});
+
+app.delete("/api/content/promo-sections/:id", (req: Request, res: Response) => {
+  const id = String(req.params.id || "");
+  const index = promotionalSectionsStore.findIndex((s) => s.id === id);
+  if (index === -1) {
+    res.status(404).json({ error: "Promotional section not found" });
+    return;
+  }
+  const [deleted] = promotionalSectionsStore.splice(index, 1);
+  res.json({ message: "Promotional section removed", item: deleted });
+});
+
+// --- Content Summary Metrics API ---
+app.get("/api/content/metrics", (_req: Request, res: Response) => {
+  const activeBanners = homepageBannersStore.filter((b) => b.status === "active").length;
+  const totalBanners = homepageBannersStore.length;
+  const featuredPhonesCount = featuredPhonesStore.filter((f) => f.status === "active").length;
+  const newArrivalsCount = newArrivalsStore.filter((n) => n.status === "active").length;
+  const bestSellersCount = bestSellersStore.filter((b) => b.status === "active").length;
+  const activePromoSections = promotionalSectionsStore.filter((p) => p.status === "active").length;
+
+  const totalBannerImpressions = homepageBannersStore.reduce((acc, b) => acc + (b.impressions || 0), 0);
+  const totalBannerClicks = homepageBannersStore.reduce((acc, b) => acc + (b.clicks || 0), 0);
+  const avgCtr =
+    totalBannerImpressions > 0
+      ? Number(((totalBannerClicks / totalBannerImpressions) * 100).toFixed(1))
+      : 0;
+
+  res.json({
+    activeBanners,
+    totalBanners,
+    featuredPhonesCount,
+    newArrivalsCount,
+    bestSellersCount,
+    activePromoSections,
+    totalBannerImpressions,
+    totalBannerClicks,
+    avgCtr,
+  });
+});

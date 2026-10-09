@@ -33,6 +33,9 @@ export const ROUTES = {
     ROOT: "/promotions",
     DETAIL: (id: string | number) => `/promotions/${encodeURIComponent(String(id))}`,
   },
+  CONTENT: {
+    ROOT: "/content",
+  },
   PROFILE: "/profile",
   DEVICES: {
     ROOT: "/devices",

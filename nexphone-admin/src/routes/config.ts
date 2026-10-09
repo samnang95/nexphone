@@ -105,6 +105,15 @@ export const ROUTE_REGISTRY: Record<string, RouteMeta> = {
     badge: "Promos",
     iconName: "ticket",
   },
+  content: {
+    key: "content",
+    path: ROUTES.CONTENT.ROOT,
+    title: "Storefront Content",
+    description: "Manage homepage banners, featured flagships, new arrivals, best sellers, and promotional blocks.",
+    category: "Core",
+    badge: "CMS",
+    iconName: "layout",
+  },
   devices: {
     key: "devices",
     path: ROUTES.DEVICES.ROOT,
@@ -170,6 +179,7 @@ export const ADMIN_NAV_SECTIONS: readonly NavRouteSection[] = [
       { title: "Customer Base", href: ROUTES.CUSTOMERS.ROOT, badge: "Users", iconName: "users" },
       { title: "Product Reviews", href: ROUTES.REVIEWS.ROOT, badge: "Reviews", iconName: "star" },
       { title: "Promotions & Sales", href: ROUTES.PROMOTIONS.ROOT, badge: "Promos", iconName: "ticket" },
+      { title: "Storefront Content", href: ROUTES.CONTENT.ROOT, badge: "CMS", iconName: "layout" },
       { title: "Connected Devices", href: ROUTES.DEVICES.ROOT, badge: "Live", iconName: "smartphone" },
     ],
   },
@@ -225,6 +235,8 @@ export function getBreadcrumbs(pathname: string): BreadcrumbItem[] {
       crumbs.push({ label: "Review Management", href: ROUTES.REVIEWS.ROOT, isCurrent });
     } else if (segment === "promotions") {
       crumbs.push({ label: "Promotion Management", href: ROUTES.PROMOTIONS.ROOT, isCurrent });
+    } else if (segment === "content") {
+      crumbs.push({ label: "Storefront Content", href: ROUTES.CONTENT.ROOT, isCurrent });
     } else if (segment === "devices") {
       crumbs.push({ label: "Connected Devices", href: ROUTES.DEVICES.ROOT, isCurrent });
     } else if (i > 0 && segments[i - 1] === "devices") {
