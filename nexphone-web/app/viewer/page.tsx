@@ -1,7 +1,7 @@
 import React, { Suspense } from "react";
 import type { Metadata } from "next";
 import { productService } from "@/services/product.service";
-import { ViewerPageClient } from "@/components/viewer-3d/ViewerPageClient";
+import { ViewerPageClient } from "@/components/viewer-3d";
 
 export const metadata: Metadata = {
   title: "3D Hardware Enclave Studio | NexPhone",
