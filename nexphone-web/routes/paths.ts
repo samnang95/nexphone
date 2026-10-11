@@ -26,6 +26,7 @@ export const ROUTES = {
     ADDRESSES: "/account/addresses",
     ORDERS: "/orders",
     SECURITY: "/account/security",
+    NOTIFICATIONS: "/account/notifications",
     SETTINGS: "/account/settings",
   },
   COMPANY: {

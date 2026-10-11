@@ -16,6 +16,7 @@ const NAV_ITEMS = [
   { label: "Profile", href: ROUTES.ACCOUNT.PROFILE, hint: "Personal details" },
   { label: "Addresses", href: ROUTES.ACCOUNT.ADDRESSES, hint: "Delivery destinations" },
   { label: "Security", href: ROUTES.ACCOUNT.SECURITY, hint: "Password & sessions" },
+  { label: "Notifications", href: ROUTES.ACCOUNT.NOTIFICATIONS, hint: "Alerts & preferences" },
   { label: "Orders", href: ROUTES.ORDERS.ROOT, hint: "History & tracking" },
 ] as const;
 

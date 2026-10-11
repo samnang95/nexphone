@@ -7,6 +7,39 @@ import type {
   OrderFilterStatus,
   OrderSortOption,
 } from "@/types/order";
+import { notificationService } from "@/services/notification.service";
+import { ROUTES } from "@/routes";
+
+function notifyOrder(order: Order, title: string, message: string) {
+  notificationService.push({
+    category: "order",
+    title,
+    message,
+    href: ROUTES.ORDERS.DETAIL(order.orderNumber),
+    ctaLabel: "View order",
+    tag: order.orderNumber,
+  });
+}
+
+function notifyPlaced(order: Order) {
+  notifyOrder(
+    order,
+    "Order placed successfully",
+    `We've received your order of $${order.total.toLocaleString()}. We'll keep you posted as it moves through fulfilment.`
+  );
+}
+
+function notifyCancelled(order: Order) {
+  notifyOrder(
+    order,
+    "Order cancelled & refunded",
+    `Your order was cancelled and a full refund of $${order.total.toLocaleString()} has been initiated.`
+  );
+}
+
+function notifyStatus(order: Order) {
+  notifyOrder(order, `Order ${order.status}`, `Your order status changed to ${order.status}.`);
+}
 
 const API_BASE = appConfig.apiUrl.replace(/\/api\/?$/, "");
 const LOCAL_ORDERS_KEY = "nexphone_user_orders_v1";
@@ -621,6 +654,7 @@ export const orderService = {
         const data = await res.json();
         const normalized = normalizeOrder(data);
         saveLocalOrder(normalized);
+        notifyPlaced(normalized);
         return normalized;
       }
     } catch (e) {
@@ -628,6 +662,7 @@ export const orderService = {
     }
 
     saveLocalOrder(newOrder);
+    notifyPlaced(newOrder);
     return newOrder;
   },
 
@@ -767,6 +802,7 @@ export const orderService = {
         const data = await res.json();
         const norm = normalizeOrder(data);
         saveLocalOrder(norm);
+        notifyCancelled(norm);
         return norm;
       }
     } catch (e) {
@@ -804,6 +840,7 @@ export const orderService = {
     };
 
     saveLocalOrder(updated);
+    notifyCancelled(updated);
     return updated;
   },
 
@@ -819,6 +856,7 @@ export const orderService = {
         const data = await res.json();
         const norm = normalizeOrder(data);
         saveLocalOrder(norm);
+        notifyStatus(norm);
         return norm;
       }
     } catch (e) {
@@ -847,6 +885,7 @@ export const orderService = {
     };
 
     saveLocalOrder(updated);
+    notifyStatus(updated);
     return updated;
   },
 };

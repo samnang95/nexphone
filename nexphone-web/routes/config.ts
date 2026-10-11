@@ -91,6 +91,14 @@ export const ROUTE_REGISTRY: Record<string, WebRouteMeta> = {
     category: "Account",
     isProtected: true,
   },
+  [ROUTES.ACCOUNT.NOTIFICATIONS]: {
+    key: "account-notifications",
+    path: ROUTES.ACCOUNT.NOTIFICATIONS,
+    title: "Notifications",
+    description: "Order updates, promotions, new phone alerts and delivery preferences.",
+    category: "Account",
+    isProtected: true,
+  },
 };
 
 /**

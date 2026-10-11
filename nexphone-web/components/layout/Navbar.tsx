@@ -6,6 +6,7 @@ import { useAuth } from "@/context/AuthContext";
 import { useCart } from "@/context/CartContext";
 import { useCompare } from "@/context/CompareContext";
 import { useWishlist } from "@/context/WishlistContext";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { ROUTES } from "@/routes";
 
 export function Navbar() {
@@ -111,6 +112,9 @@ export function Navbar() {
 
         {/* Right Actions / Auth Menu */}
         <div className="flex items-center gap-3">
+          {/* Notifications */}
+          {isAuthenticated && <NotificationBell />}
+
           {/* Wishlist Trigger */}
           <Link
             href={ROUTES.WISHLIST}

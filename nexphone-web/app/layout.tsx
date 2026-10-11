@@ -6,6 +6,7 @@ import { AuthProvider } from "@/context/AuthContext";
 import { CartProvider } from "@/context/CartContext";
 import { WishlistProvider } from "@/context/WishlistContext";
 import { CompareProvider } from "@/context/CompareContext";
+import { NotificationProvider } from "@/context/NotificationContext";
 import { CartDrawer } from "@/components/cart/CartDrawer";
 import { CompareBar } from "@/components/compare/CompareBar";
 
@@ -36,17 +37,19 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-[#080c14] text-slate-100">
         <AuthProvider>
-          <CartProvider>
-            <WishlistProvider>
-              <CompareProvider>
-                {children}
-                <CartDrawer />
-                <Suspense fallback={null}>
-                  <CompareBar />
-                </Suspense>
-              </CompareProvider>
-            </WishlistProvider>
-          </CartProvider>
+          <NotificationProvider>
+            <CartProvider>
+              <WishlistProvider>
+                <CompareProvider>
+                  {children}
+                  <CartDrawer />
+                  <Suspense fallback={null}>
+                    <CompareBar />
+                  </Suspense>
+                </CompareProvider>
+              </WishlistProvider>
+            </CartProvider>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>
