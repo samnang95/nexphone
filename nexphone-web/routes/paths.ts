@@ -23,7 +23,8 @@ export const ROUTES = {
   ACCOUNT: {
     ROOT: "/account",
     PROFILE: "/account/profile",
-    ORDERS: "/account/orders",
+    ADDRESSES: "/account/addresses",
+    ORDERS: "/orders",
     SECURITY: "/account/security",
     SETTINGS: "/account/settings",
   },

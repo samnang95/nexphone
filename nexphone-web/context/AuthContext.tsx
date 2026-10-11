@@ -25,6 +25,7 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (payload: RegisterPayload) => Promise<void>;
   logout: () => Promise<void>;
+  updateUser: (user: User) => void;
   forgotPassword: (
     payload: ForgotPasswordPayload
   ) => Promise<{ success: boolean; message: string; code?: string }>;
@@ -104,6 +105,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, []);
 
+  const updateUser = useCallback(
+    (nextUser: User) => {
+      setUser(nextUser);
+      if (token) {
+        authService.setStoredSession(token, nextUser);
+      }
+    },
+    [token]
+  );
+
   const forgotPassword = useCallback(async (payload: ForgotPasswordPayload) => {
     return await authService.forgotPassword(payload);
   }, []);
@@ -122,6 +133,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        updateUser,
         forgotPassword,
         resetPassword,
       }}

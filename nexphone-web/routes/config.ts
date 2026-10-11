@@ -75,6 +75,14 @@ export const ROUTE_REGISTRY: Record<string, WebRouteMeta> = {
     category: "Account",
     isProtected: true,
   },
+  [ROUTES.ACCOUNT.ADDRESSES]: {
+    key: "account-addresses",
+    path: ROUTES.ACCOUNT.ADDRESSES,
+    title: "Saved Addresses",
+    description: "Manage delivery destinations and default shipping address.",
+    category: "Account",
+    isProtected: true,
+  },
   [ROUTES.ACCOUNT.SECURITY]: {
     key: "account-security",
     path: ROUTES.ACCOUNT.SECURITY,
@@ -100,6 +108,7 @@ export const HEADER_NAV_ITEMS: readonly NavRouteItem[] = [
  */
 export const USER_DROPDOWN_ITEMS: readonly NavRouteItem[] = [
   { title: "Customer Profile", href: ROUTES.ACCOUNT.PROFILE, iconName: "user" },
+  { title: "Saved Addresses", href: ROUTES.ACCOUNT.ADDRESSES, iconName: "user" },
   { title: "Orders & Pre-orders", href: ROUTES.ACCOUNT.ORDERS, iconName: "package" },
   { title: "Security & Password", href: ROUTES.ACCOUNT.SECURITY, iconName: "shield" },
 ];
