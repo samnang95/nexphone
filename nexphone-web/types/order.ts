@@ -18,7 +18,7 @@ export interface DeliveryAddress {
   instructions?: string;
 }
 
-export type PaymentMethodType = "credit_card" | "nex_credit" | "crypto" | "apple_pay";
+export type PaymentMethodType = "credit_card" | "nex_credit" | "crypto" | "apple_pay" | "stripe" | "corporate_wire";
 
 export interface PaymentDetails {
   method: PaymentMethodType;
@@ -28,8 +28,9 @@ export interface PaymentDetails {
   cryptoCurrency?: "USDC" | "BTC" | "ETH";
   installmentsMonths?: number;
   monthlyAmount?: number;
-  status: "paid" | "authorized" | "pending";
+  status: "paid" | "authorized" | "pending" | "refunded";
   transactionId: string;
+  currency?: string;
 }
 
 export interface ShippingOption {
@@ -72,6 +73,7 @@ export interface Order {
   createdAt: string;
   updatedAt: string;
   status: "pending" | "processing" | "confirmed" | "shipped" | "delivered" | "cancelled";
+  cancelReason?: string;
   customer: {
     id?: string;
     name: string;
@@ -93,6 +95,7 @@ export interface Order {
     trackingNumber: string;
     estimatedDelivery: string;
     service?: string;
+    trackingUrl?: string;
   };
   timeline: OrderTimelineEvent[];
 }
@@ -117,3 +120,13 @@ export interface PlaceOrderPayload {
   tax: number;
   total: number;
 }
+
+export interface CancelOrderPayload {
+  reason: string;
+  note?: string;
+  refundPayment?: boolean;
+}
+
+export type OrderFilterStatus = "all" | "processing" | "confirmed" | "shipped" | "delivered" | "cancelled" | "pending";
+export type OrderSortOption = "newest" | "oldest" | "total_desc" | "total_asc";
+

@@ -8,9 +8,11 @@ interface OrderPageProps {
 
 export async function generateStaticParams() {
   return [
-    { id: "NX-ORD-9040" },
-    { id: "NX-ORD-9041" },
     { id: "NX-ORD-9042" },
+    { id: "NX-ORD-9041" },
+    { id: "NX-ORD-9040" },
+    { id: "NX-ORD-9039" },
+    { id: "NX-ORD-9036" },
   ];
 }
 

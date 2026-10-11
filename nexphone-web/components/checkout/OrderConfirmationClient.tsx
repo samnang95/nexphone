@@ -252,16 +252,22 @@ export function OrderConfirmationClient({ order }: OrderConfirmationClientProps)
             </div>
 
             {/* Navigation Actions */}
-            <div className="flex items-center gap-3 print:hidden">
+            <div className="flex flex-wrap items-center gap-3 print:hidden">
+              <Link
+                href={ROUTES.ORDERS.ROOT}
+                className="flex-1 py-3.5 px-4 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider text-center transition-colors shadow-lg shadow-cyan-500/20 active:scale-95"
+              >
+                Track In Orders
+              </Link>
               <Link
                 href={ROUTES.PRODUCTS.ROOT}
-                className="flex-1 py-3.5 rounded-2xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider text-center transition-colors shadow-lg shadow-cyan-500/20 active:scale-95"
+                className="py-3.5 px-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-mono text-xs text-center transition-colors"
               >
                 Browse Catalog
               </Link>
               <Link
                 href={ROUTES.HOME}
-                className="py-3.5 px-5 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-white font-mono text-xs text-center transition-colors"
+                className="py-3.5 px-4 rounded-2xl bg-slate-900 border border-slate-800 hover:border-slate-700 text-slate-300 hover:text-white font-mono text-xs text-center transition-colors"
               >
                 Home
               </Link>

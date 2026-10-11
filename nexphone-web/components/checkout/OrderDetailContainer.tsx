@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import type { Order } from "@/types/order";
 import { orderService } from "@/services/order.service";
-import { OrderConfirmationClient } from "./OrderConfirmationClient";
+import { OrderDetailClient } from "@/components/orders";
 import { ROUTES } from "@/routes";
 
 interface OrderDetailContainerProps {
@@ -53,23 +53,23 @@ export function OrderDetailContainer({ orderId }: OrderDetailContainerProps) {
         </p>
         <div className="mt-6 flex items-center gap-3">
           <Link
-            href={ROUTES.PRODUCTS.ROOT}
+            href={ROUTES.ORDERS.ROOT}
             className="px-5 py-2.5 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-xs uppercase tracking-wider transition-colors shadow-lg shadow-cyan-500/20"
           >
-            Explore Flagships
+            All Orders
           </Link>
           <Link
-            href={ROUTES.HOME}
+            href={ROUTES.PRODUCTS.ROOT}
             className="px-5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-slate-300 hover:text-white text-xs font-mono transition-colors"
           >
-            Home
+            Explore Flagships
           </Link>
         </div>
       </div>
     );
   }
 
-  return <OrderConfirmationClient order={order} />;
+  return <OrderDetailClient initialOrder={order} />;
 }
 
 export default OrderDetailContainer;
