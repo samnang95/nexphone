@@ -133,7 +133,9 @@ export const config: AppConfig = Object.freeze({
   port: Number(process.env.PORT) || (activeFlavor === "staging" ? 4001 : 4000),
   appName: process.env.APP_NAME || `NexPhone API (${activeFlavor.toUpperCase()})`,
   mongodbUri:
-    process.env.MONGODB_URI || `mongodb://localhost:27017/nexphone_${activeFlavor}`,
+    process.env.MONGODB_URI ||
+    process.env.MONGO_URI ||
+    `mongodb://localhost:27017/nexphone_${activeFlavor}`,
   jwtSecret: resolveJwtSecret(activeFlavor),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   corsOrigins: (process.env.CORS_ORIGINS || "")
