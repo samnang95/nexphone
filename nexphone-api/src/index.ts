@@ -8,9 +8,12 @@ async function bootstrap() {
     console.log(`📡 Flavor: \x1b[33m${config.flavor.toUpperCase()}\x1b[0m | Health: http://localhost:${config.port}/api/health\n`);
   });
 
-  // Connect database asynchronously without blocking HTTP readiness
+  // Connect database asynchronously without blocking HTTP readiness.
+  // connectDatabase() only rejects when a database is required (staging/prod) and unreachable.
   connectDatabase().catch((err) => {
-    console.warn("⚠️  [Database] Initial connection warning:", err.message);
+    console.error("❌ [Database] Fatal:", err.message);
+    server.close(() => process.exit(1));
+    setTimeout(() => process.exit(1), 2000).unref();
   });
 
   // Graceful shutdown handling

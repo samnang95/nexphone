@@ -85,6 +85,44 @@ export interface AppConfig {
   jwtSecret: string;
   jwtExpiresIn: string;
   corsOrigins: string[];
+  bcryptRounds: number;
+  /** Max attempts per window on sensitive auth endpoints (login, register, forgot/reset password). */
+  authRateLimitMax: number;
+  authRateLimitWindowMs: number;
+  resetCodeTtlMinutes: number;
+  /**
+   * Include the password-reset code in the forgot-password response.
+   * Only ever honoured in the dev flavor (no email provider is configured yet).
+   */
+  exposeResetCode: boolean;
+  /**
+   * Allow staging/prod to start without a database (serves in-memory seed data for
+   * modules that have not been migrated yet). Never enabled by default.
+   */
+  allowStandaloneMode: boolean;
+}
+
+function envNumber(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (raw === undefined || raw.trim() === "") return fallback;
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
+export function resolveJwtSecret(flavor: Flavor): string {
+  const secret = (process.env.JWT_SECRET || "").trim();
+  if (secret) {
+    if (flavor !== "dev" && /^(change|your_|replace)/i.test(secret)) {
+      console.warn(
+        `⚠️  [Config] JWT_SECRET for the ${flavor} flavor looks like a placeholder. Rotate it before real deployment.`
+      );
+    }
+    return secret;
+  }
+  if (flavor === "dev") {
+    return `nexphone_fallback_secret_${flavor}`;
+  }
+  throw new Error(`JWT_SECRET must be set for the ${flavor} flavor.`);
 }
 
 export const config: AppConfig = Object.freeze({
@@ -96,12 +134,18 @@ export const config: AppConfig = Object.freeze({
   appName: process.env.APP_NAME || `NexPhone API (${activeFlavor.toUpperCase()})`,
   mongodbUri:
     process.env.MONGODB_URI || `mongodb://localhost:27017/nexphone_${activeFlavor}`,
-  jwtSecret: process.env.JWT_SECRET || `nexphone_fallback_secret_${activeFlavor}`,
+  jwtSecret: resolveJwtSecret(activeFlavor),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   corsOrigins: (process.env.CORS_ORIGINS || "")
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean),
+  bcryptRounds: envNumber("BCRYPT_ROUNDS", 12),
+  authRateLimitMax: envNumber("AUTH_RATE_LIMIT_MAX", 10),
+  authRateLimitWindowMs: envNumber("AUTH_RATE_LIMIT_WINDOW_MS", 15 * 60 * 1000),
+  resetCodeTtlMinutes: envNumber("RESET_CODE_TTL_MINUTES", 15),
+  exposeResetCode: activeFlavor === "dev" && process.env.EXPOSE_RESET_CODE_IN_DEV !== "false",
+  allowStandaloneMode: process.env.ALLOW_STANDALONE_MODE === "true",
 });
 
 console.log(

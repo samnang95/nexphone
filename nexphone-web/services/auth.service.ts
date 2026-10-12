@@ -40,6 +40,15 @@ const DEMO_USERS: Record<string, User> = {
   },
 };
 
+/**
+ * `fetch` rejects with a TypeError when the server cannot be reached. API error responses
+ * (401/400/409/...) are thrown as plain Errors and must reach the user, never trigger the
+ * offline demo fallbacks below.
+ */
+function isNetworkError(err: unknown): boolean {
+  return err instanceof TypeError;
+}
+
 export const authService = {
   getStoredToken(): string | null {
     if (typeof window === "undefined") return null;
@@ -91,6 +100,7 @@ export const authService = {
       this.setStoredSession(data.token, data.user);
       return data;
     } catch (err: unknown) {
+      if (!isNetworkError(err)) throw err;
       // Offline fallback: If backend cannot be reached, allow known demo accounts to log in seamlessly
       const emailLower = credentials.email.toLowerCase();
       if (DEMO_USERS[emailLower]) {
@@ -122,8 +132,8 @@ export const authService = {
 
       this.setStoredSession(data.token, data.user);
       return data;
-    } catch {
-      // Offline fallback
+    } catch (err: unknown) {
+      if (!isNetworkError(err)) throw err;
       const mockId = `cust-${Date.now().toString(36)}`;
       const mockUser: User = {
         id: mockId,
@@ -143,9 +153,11 @@ export const authService = {
   },
 
   async logout(): Promise<void> {
+    const token = this.getStoredToken();
     try {
       await fetch(`${API_BASE}/api/auth/logout`, {
         method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
       });
     } catch {
       // Ignore network errors on logout
@@ -164,13 +176,9 @@ export const authService = {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to dispatch recovery code.");
       return data;
-    } catch {
-      // Fallback
-      return {
-        success: true,
-        message: "A 6-digit recovery code has been dispatched to your email address.",
-        code: "849201",
-      };
+    } catch (err: unknown) {
+      if (!isNetworkError(err)) throw err;
+      throw new Error("Unable to reach the server. Please try again in a moment.");
     }
   },
 
@@ -185,13 +193,8 @@ export const authService = {
       if (!res.ok) throw new Error(data.error || "Password reset failed. Invalid or expired code.");
       return data;
     } catch (err: unknown) {
-      if (payload.code === "849201" || payload.code.length === 6) {
-        return {
-          success: true,
-          message: "Your password has been successfully reset. You may now sign in.",
-        };
-      }
-      throw err;
+      if (!isNetworkError(err)) throw err;
+      throw new Error("Unable to reach the server. Your password was not changed. Please try again.");
     }
   },
 
@@ -210,8 +213,13 @@ export const authService = {
           return data.user;
         }
       }
+      if (res.status === 401 || res.status === 403) {
+        // Token revoked, expired, or account suspended: do not keep showing a signed-in user.
+        this.clearStoredSession();
+        return null;
+      }
     } catch {
-      // Fallback to locally stored user
+      // Server unreachable: fall back to locally stored user
     }
     return this.getStoredUser();
   },
