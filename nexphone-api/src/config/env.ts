@@ -123,7 +123,14 @@ export const config: AppConfig = Object.freeze({
     `mongodb://localhost:27017/nexphone_${activeFlavor}`,
   jwtSecret: resolveJwtSecret(activeFlavor),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
-  corsOrigins: (process.env.CORS_ORIGINS || "")
+  corsOrigins: (
+    process.env.CORS_ORIGINS ||
+    (activeFlavor === "prod"
+      ? "https://nexphone.io,https://admin.nexphone.io"
+      : activeFlavor === "staging"
+      ? "https://staging.nexphone.io,https://staging-admin.nexphone.io,http://localhost:3000,http://localhost:3001"
+      : "http://localhost:3000,http://localhost:3001,http://127.0.0.1:3000,http://127.0.0.1:3001")
+  )
     .split(",")
     .map((o) => o.trim())
     .filter(Boolean),

@@ -4,7 +4,9 @@
 # Build artifacts
 /dist
 
-# Environment local overrides
+# Environment files
+.env
+.env.*
 .env*.local
 .env.development.local
 .env.staging.local
