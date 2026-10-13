@@ -1,14 +1,13 @@
 import { Schema, model, type HydratedDocument, type InferSchemaType } from "mongoose";
-
-export const USER_ROLES = ["customer", "admin", "super_admin"] as const;
-export const USER_TIERS = ["Regular", "Pro", "VIP", "Enterprise"] as const;
-export const USER_STATUSES = ["active", "disabled"] as const;
-
-export type UserRole = (typeof USER_ROLES)[number];
-
-export const ADDRESS_TYPES = ["home", "work", "other"] as const;
-export type AddressType = (typeof ADDRESS_TYPES)[number];
-
+import {
+  USER_ROLES,
+  USER_TIERS,
+  USER_STATUSES,
+  ADDRESS_TYPES,
+  type UserRole,
+  type AddressType,
+} from "../constants/user.constants";
+export { USER_ROLES, USER_TIERS, USER_STATUSES, ADDRESS_TYPES, type UserRole, type AddressType };
 export const addressSchema = new Schema(
   {
     id: { type: String, required: true },
@@ -30,7 +29,6 @@ export const addressSchema = new Schema(
 );
 
 export type AddressItem = InferSchemaType<typeof addressSchema>;
-
 const userSchema = new Schema(
   {
     /** Human-friendly id shown in the admin UI. Only customers have one. */

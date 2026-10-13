@@ -3,7 +3,7 @@ import { authenticate } from "../middleware/auth";
 import { requireDatabase } from "../middleware/requireDatabase";
 import { validate } from "../middleware/validate";
 import * as controller from "../controllers/user.controller";
-import { addressInputSchema, updateAddressSchema, updateAvatarSchema, updateProfileSchema } from "../schemas/user.schemas";
+import { addressInputSchema, updateAddressSchema, updateAvatarSchema, updateProfileSchema } from "../validators/user.validator";
 
 export const userRouter = Router();
 

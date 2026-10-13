@@ -18,29 +18,15 @@ import {
   type LoginInput,
   type RegisterInput,
   type ResetPasswordInput,
-} from "../schemas/auth.schemas";
+} from "../validators/auth.validator";
+import { serializeAuthUser, authResponse } from "../views/auth.view";
+
+export { serializeAuthUser };
 
 /** Wrong guesses allowed per issued recovery code before it is invalidated. */
 const MAX_RESET_ATTEMPTS = 5;
 
 const INVALID_CREDENTIALS = "Invalid credentials. Please verify your email and password.";
-
-/** Public shape of an account in auth responses. Never includes secrets. */
-export function serializeAuthUser(user: UserDocument) {
-  return {
-    id: String(user._id),
-    customerNumber: user.customerNumber ?? undefined,
-    name: user.name,
-    email: user.email,
-    phone: user.phone ?? undefined,
-    company: user.company ?? undefined,
-    tier: user.tier,
-    status: user.status,
-    role: user.role,
-    avatarUrl: user.avatarUrl ?? undefined,
-    createdAt: user.createdAt,
-  };
-}
 
 function resetCodeHash(code: string): string {
   return createHmac("sha256", config.jwtSecret).update(`password-reset:${code}`).digest("hex");

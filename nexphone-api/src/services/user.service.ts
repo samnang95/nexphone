@@ -2,15 +2,10 @@ import { Types } from "mongoose";
 import { HttpError } from "../utils/httpError";
 import { User, type AddressItem, type UserDocument } from "../models/user.model";
 import { serializeAuthUser } from "./auth.service";
-import type { AddressInput, UpdateProfileInput } from "../schemas/user.schemas";
+import type { AddressInput, UpdateProfileInput } from "../validators/user.validator";
+import { serializeUserProfile } from "../views/user.view";
 
-export function serializeUserProfile(user: UserDocument) {
-  const base = serializeAuthUser(user);
-  return {
-    ...base,
-    addresses: user.addresses || [],
-  };
-}
+export { serializeUserProfile };
 
 export async function getProfile(userId: unknown) {
   const user = await User.findById(userId);
