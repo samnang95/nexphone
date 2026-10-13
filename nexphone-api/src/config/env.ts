@@ -85,6 +85,12 @@ export interface AppConfig {
   resetCodeTtlMinutes: number;
   exposeResetCode: boolean;
   allowStandaloneMode: boolean;
+  cloudinary: {
+    cloudName: string;
+    apiKey: string;
+    apiSecret: string;
+    url?: string;
+  };
 }
 
 function envNumber(name: string, fallback: number): number {
@@ -140,6 +146,12 @@ export const config: AppConfig = Object.freeze({
   resetCodeTtlMinutes: envNumber("RESET_CODE_TTL_MINUTES", 15),
   exposeResetCode: activeFlavor === "dev" && process.env.EXPOSE_RESET_CODE_IN_DEV !== "false",
   allowStandaloneMode: process.env.ALLOW_STANDALONE_MODE === "true",
+  cloudinary: {
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME || "",
+    apiKey: process.env.CLOUDINARY_API_KEY || "",
+    apiSecret: process.env.CLOUDINARY_API_SECRET || "",
+    url: process.env.CLOUDINARY_URL,
+  },
 });
 
 console.log(

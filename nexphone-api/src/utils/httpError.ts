@@ -29,4 +29,7 @@ export class HttpError extends Error {
   static conflict(message: string, code = "CONFLICT") {
     return new HttpError(409, message, code);
   }
+  static internal(message = "Internal server error.", code = "INTERNAL_SERVER_ERROR", details?: unknown) {
+    return new HttpError(500, message, code, details);
+  }
 }

@@ -13,3 +13,4 @@ export { settingsRouter } from "./settings.routes";
 export { analyticsRouter } from "./analytics.routes";
 export { dashboardRouter } from "./dashboard.routes";
 export { systemRouter } from "./system.routes";
+export { uploadRouter } from "./upload.routes";
