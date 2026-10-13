@@ -16,26 +16,6 @@ brandsRouter.get("/:id", optionalAuthenticate, controller.getBrandById);
 
 // Admin-only management endpoints
 brandsRouter.post("/", authenticate, requireAdmin, validate({ body: createBrandSchema }), controller.createBrand);
-
-brandsRouter.put(
-  "/:id",
-  authenticate,
-  requireAdmin,
-  validate({ body: updateBrandSchema }),
-  controller.updateBrand
-);
-
-brandsRouter.patch(
-  "/:id",
-  authenticate,
-  requireAdmin,
-  validate({ body: updateBrandSchema }),
-  controller.updateBrand
-);
-
-brandsRouter.delete(
-  "/:id",
-  authenticate,
-  requireAdmin,
-  controller.deleteBrand
-);
+brandsRouter.put("/:id", authenticate, requireAdmin, validate({ body: updateBrandSchema }), controller.updateBrand);
+brandsRouter.patch("/:id", authenticate, requireAdmin, validate({ body: updateBrandSchema }), controller.updateBrand);
+brandsRouter.delete("/:id", authenticate, requireAdmin, controller.deleteBrand);
