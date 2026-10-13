@@ -23,6 +23,7 @@ import {
   wishlistRouter,
   comparisonRouter,
   checkoutRouter,
+  homepageRouter,
 } from "./routes";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 
@@ -85,6 +86,7 @@ app.use(customersRouter);
 app.use(reviewsRouter);
 app.use(promotionsRouter);
 app.use(contentRouter);
+app.use(homepageRouter);
 app.use(notificationsRouter);
 app.use(settingsRouter);
 app.use(analyticsRouter);
