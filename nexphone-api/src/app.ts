@@ -65,12 +65,12 @@ app.use(["/api/auth", "/auth"], authRouter); // "/auth" is the legacy alias with
 app.use(["/api/user", "/api/users", "/user"], userRouter);
 app.use(["/api/upload", "/api/uploads"], uploadRouter);
 app.use(["/api/products", "/api/phones"], productsRouter);
+app.use("/api/brands", brandsRouter);
 
 // Legacy in-memory feature modules (mounted at root; each router declares full paths).
 // Order preserved from the original monolithic app.ts.
 app.use(systemRouter);
 app.use(dashboardRouter);
-app.use(brandsRouter);
 app.use(inventoryRouter);
 app.use(ordersRouter);
 app.use(customersRouter);
