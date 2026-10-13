@@ -92,5 +92,4 @@ const WishlistSchema = new Schema<WishlistDocument>(
   }
 );
 
-export const Wishlist: Model<WishlistDocument> =
-  mongoose.models.Wishlist || mongoose.model<WishlistDocument>("Wishlist", WishlistSchema);
+export const Wishlist: Model<WishlistDocument> = mongoose.models.Wishlist || mongoose.model<WishlistDocument>("Wishlist", WishlistSchema);
