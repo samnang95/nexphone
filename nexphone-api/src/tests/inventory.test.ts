@@ -14,7 +14,6 @@ describe("Inventory API", () => {
       expect(res.body.success).toBe(true);
       expect(Array.isArray(res.body.availability)).toBe(true);
       expect(res.body.availability.length).toBeGreaterThan(0);
-
       const first = res.body.availability[0];
       expect(first).toHaveProperty("sku");
       expect(first).toHaveProperty("productId");
@@ -23,7 +22,6 @@ describe("Inventory API", () => {
       expect(first).toHaveProperty("stockQuantity");
       expect(first).toHaveProperty("status");
     });
-
     it("GET /api/inventory/availability?sku=NX-PRO-256 returns availability for a specific SKU", async () => {
       const res = await request(app).get("/api/inventory/availability?sku=NX-PRO-256");
       expect(res.status).toBe(200);
@@ -32,7 +30,6 @@ describe("Inventory API", () => {
       expect(res.body.availability.inStock).toBe(true);
       expect(res.body.availability.availableQuantity).toBeGreaterThan(0);
     });
-
     it("GET /api/inventory/availability?productId=prod-001 returns all variants of that product", async () => {
       const res = await request(app).get("/api/inventory/availability?productId=prod-001");
       expect(res.status).toBe(200);
@@ -41,7 +38,6 @@ describe("Inventory API", () => {
       expect(res.body.availability.length).toBeGreaterThanOrEqual(2);
       expect(res.body.availability.every((i: any) => i.productId === "prod-001")).toBe(true);
     });
-
     it("GET /api/inventory/availability?sku=UNKNOWN-SKU returns 404", async () => {
       const res = await request(app).get("/api/inventory/availability?sku=UNKNOWN-SKU");
       expect(res.status).toBe(404);
@@ -331,7 +327,6 @@ describe("Inventory API", () => {
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body)).toBe(true);
       expect(res.body.length).toBeGreaterThan(0);
-
       const mov = res.body[0];
       expect(mov).toHaveProperty("id");
       expect(mov).toHaveProperty("sku");

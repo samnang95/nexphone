@@ -209,8 +209,6 @@ export const inventoryRepository = {
   async updateItem(id: string, updates: Partial<InventoryItemRecord>): Promise<any | null> {
     await ensureInventorySeeded();
     const timestamp = new Date().toISOString();
-
-    // 1. In-memory update
     const memIdx = inventoryCatalog.findIndex((i) => i.id === id || i.sku.toLowerCase() === id.toLowerCase());
     let memoryItem: InventoryItemRecord | null = null;
     if (memIdx !== -1) {
@@ -225,8 +223,6 @@ export const inventoryRepository = {
         memoryItem = merged;
       }
     }
-
-    // 2. Database update
     if (isDatabaseConnected()) {
       const dbItem = await InventoryItem.findOneAndUpdate(
         { $or: [{ id }, { sku: new RegExp(`^${id}$`, "i") }] },
@@ -319,9 +315,6 @@ export const inventoryRepository = {
     return { movements, total };
   },
 
-  /**
-   * Keep product storage variant stock in sync with inventory stock
-   */
   async syncProductVariantStock(sku: string, newStock: number): Promise<void> {
     if (!sku) return;
     try {
@@ -332,7 +325,6 @@ export const inventoryRepository = {
         );
       }
     } catch {
-      // Best-effort catalog sync
     }
   },
 };

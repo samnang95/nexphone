@@ -20,14 +20,10 @@ import type {
 } from "../validators/inventory.validator";
 
 export const inventoryService = {
-  /**
-   * 1. Get all inventory items with filtering & sorting
-   */
   async getInventory(query: QueryInventoryInput = {}): Promise<{ items: InventoryItemRecord[]; total: number }> {
     const { search, status, warehouse, onlyAlerts, sortBy = "stockQuantity", sortDirection = "asc", page = 1, limit = 100 } = query;
     const filters = { search, status, warehouse, onlyAlerts };
     const pagination = { page, limit };
-
     const { items, total } = await inventoryRepository.findAll(filters, sortBy, sortDirection, pagination);
     return {
       items: items.map(serializeInventoryItem),
@@ -35,9 +31,6 @@ export const inventoryService = {
     };
   },
 
-  /**
-   * Get single inventory item by ID or SKU
-   */
   async getInventoryById(id: string): Promise<InventoryItemRecord> {
     const item = await inventoryRepository.findById(id);
     if (!item) {
@@ -46,9 +39,6 @@ export const inventoryService = {
     return serializeInventoryItem(item);
   },
 
-  /**
-   * 1. Get Stock Availability (public / storefront / client)
-   */
   async getStockAvailability(query: { sku?: string; productId?: string }): Promise<StockAvailabilityView[]> {
     if (query.sku?.trim()) {
       const item = await inventoryRepository.findBySku(query.sku.trim());
@@ -71,9 +61,6 @@ export const inventoryService = {
     return items.map(serializeStockAvailability);
   },
 
-  /**
-   * 2. Check Stock Before Purchase (Atomic pre-checkout stock verification)
-   */
   async checkStockBeforePurchase(input: CheckStockInput): Promise<StockCheckResult> {
     const results: StockCheckItemResult[] = [];
     const issues: string[] = [];
@@ -151,9 +138,6 @@ export const inventoryService = {
     };
   },
 
-  /**
-   * 3. Update Stock (Admin) - Manual adjustments (add, subtract, set)
-   */
   async adjustStock(
     payload: AdjustStockInput,
     performedByFallback?: string
@@ -216,9 +200,6 @@ export const inventoryService = {
     };
   },
 
-  /**
-   * 4. Restock Products (Admin) - Batch/PO replenishment
-   */
   async restockProduct(
     identifier: string,
     payload: RestockInput,
@@ -279,9 +260,6 @@ export const inventoryService = {
     };
   },
 
-  /**
-   * 5. Get Low-Stock Products (Admin) - Low stock alerts & reorder intelligence
-   */
   async getLowStockProducts(warehouse?: string): Promise<{
     totalAlerts: number;
     criticalCount: number;
@@ -289,10 +267,8 @@ export const inventoryService = {
     items: Array<InventoryItemRecord & { recommendedReorderQuantity: number; urgencyLevel: "critical" | "warning" }>;
   }> {
     const lowStockItems = await inventoryRepository.findLowStock(warehouse);
-
     let criticalCount = 0;
     let warningCount = 0;
-
     const enriched = lowStockItems.map((raw) => {
       const item = serializeInventoryItem(raw);
       const isCritical = item.stockQuantity === 0;
@@ -322,9 +298,6 @@ export const inventoryService = {
     };
   },
 
-  /**
-   * 6. Track Stock Changes (Admin) - Audit log / stock movement history
-   */
   async getStockMovements(query: QueryMovementsInput = {}): Promise<{ movements: any[]; total: number }> {
     const { itemId, sku, reason, page = 1, limit = 50 } = query;
     const pagination = { page, limit };
@@ -336,9 +309,6 @@ export const inventoryService = {
     };
   },
 
-  /**
-   * Update low stock alert threshold and reorder point (Preserves existing admin contract)
-   */
   async updateThreshold(id: string, payload: UpdateThresholdInput): Promise<InventoryItemRecord> {
     const item = await inventoryRepository.findById(id);
     if (!item) {
@@ -359,9 +329,6 @@ export const inventoryService = {
     return serializeInventoryItem(updated);
   },
 
-  /**
-   * Direct update of stock quantities / properties
-   */
   async updateStock(
     id: string,
     payload: UpdateStockInput,
