@@ -16,10 +16,6 @@ function extractBearer(header: string | undefined): string | null {
   return token || null;
 }
 
-/**
- * Requires a valid access token. The user is re-loaded on every request so that
- * disabling an account, changing its password, or logging out takes effect immediately.
- */
 export const authenticate: RequestHandler = async (req, _res, next) => {
   const raw = extractBearer(req.headers.authorization);
   if (!raw) {
@@ -56,14 +52,9 @@ export const authenticate: RequestHandler = async (req, _res, next) => {
   next();
 };
 
-/**
- * Optional authentication. Does not fail if token is missing or invalid,
- * but sets `req.auth` if a valid token is provided.
- */
 export const optionalAuthenticate: RequestHandler = async (req, _res, next) => {
   const raw = extractBearer(req.headers.authorization);
   if (!raw) return next();
-
   try {
     const payload = verifyAccessToken(raw);
     if (!isValidObjectId(payload.sub)) return next();
@@ -72,17 +63,14 @@ export const optionalAuthenticate: RequestHandler = async (req, _res, next) => {
       User.findById(payload.sub),
       RevokedToken.exists({ jti: payload.jti }),
     ]);
-
     if (user && !revoked && user.status !== "disabled" && user.tokenVersion === payload.ver) {
       req.auth = { user, token: payload };
     }
   } catch {
-    // Continue without req.auth
   }
   next();
 };
 
-/** Must run after `authenticate`. Role comes from the database, never from the token claim. */
 export const authorize =
   (...roles: UserRole[]): RequestHandler =>
   (req, _res, next) => {

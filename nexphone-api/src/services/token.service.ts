@@ -60,11 +60,10 @@ export function issueTokenPair(user: UserDocument) {
   return {
     accessToken,
     refreshToken,
-    token: accessToken, // backwards compatibility with existing clients
+    token: accessToken,
   };
 }
 
-/** Throws if the token is malformed, expired, signed with another key/algorithm, or has an unexpected shape. */
 export function verifyAccessToken(token: string): AccessTokenPayload {
   const decoded = jwt.verify(token, config.jwtSecret, { algorithms: ["HS256"], issuer: ISSUER });
   if (

@@ -226,7 +226,6 @@ const ProductSchema = new Schema<ProductDocument>(
   }
 );
 
-// Text index for fast multi-field search
 ProductSchema.index({
   name: "text",
   subtitle: "text",
@@ -234,5 +233,4 @@ ProductSchema.index({
   brand: "text",
 });
 
-export const Product: Model<ProductDocument> =
-  mongoose.models.Product || mongoose.model<ProductDocument>("Product", ProductSchema);
+export const Product: Model<ProductDocument> = mongoose.models.Product || mongoose.model<ProductDocument>("Product", ProductSchema);

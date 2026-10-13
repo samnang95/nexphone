@@ -20,9 +20,7 @@ export interface PaginationOptions {
   page: number;
   limit: number;
 }
-
 let seeded = false;
-
 export async function ensureSeeded(): Promise<void> {
   if (seeded || !isDatabaseConnected()) return;
   try {

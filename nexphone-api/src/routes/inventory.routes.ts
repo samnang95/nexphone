@@ -1,141 +1,117 @@
-import { Router, type Request, type Response } from "express";
-import { InventoryItemRecord, InventoryMovementRecord, calculateStockStatus, inventoryCatalog, inventoryMovements } from "../data/inventory.data";
+import { Router } from "express";
+import { optionalAuthenticate } from "../middleware/auth";
+import { validate } from "../middleware/validate";
+import {
+  queryInventorySchema,
+  checkStockSchema,
+  adjustStockSchema,
+  restockSchema,
+  updateThresholdSchema,
+  updateStockSchema,
+  queryMovementsSchema,
+} from "../validators/inventory.validator";
+import * as controller from "../controllers/inventory.controller";
 
 export const inventoryRouter = Router();
 
-// Inventory Endpoints
-inventoryRouter.get("/api/inventory", (req: Request, res: Response) => {
-  const { search, status, warehouse, onlyAlerts } = req.query;
-  let items = [...inventoryCatalog];
+// ==========================================
+// 1. Stock Availability & Verification (Public / Storefront / Client)
+// ==========================================
+inventoryRouter.get(
+  ["/api/inventory/availability", "/inventory/availability"],
+  optionalAuthenticate,
+  controller.getStockAvailability
+);
 
-  if (status && typeof status === "string" && status !== "all") {
-    items = items.filter((item) => item.status === status);
-  }
+inventoryRouter.post(
+  ["/api/inventory/check-stock", "/inventory/check-stock"],
+  optionalAuthenticate,
+  validate({ body: checkStockSchema }),
+  controller.checkStockBeforePurchase
+);
 
-  if (warehouse && typeof warehouse === "string" && warehouse !== "all") {
-    items = items.filter((item) => item.warehouse.toLowerCase().includes(warehouse.toLowerCase()));
-  }
+// ==========================================
+// 2. Low-Stock Intelligence & Alerts (Admin / Logistics)
+// ==========================================
+inventoryRouter.get(
+  ["/api/inventory/low-stock", "/inventory/low-stock", "/api/inventory/alerts", "/inventory/alerts"],
+  optionalAuthenticate,
+  controller.getLowStockProducts
+);
 
-  if (onlyAlerts === "true") {
-    items = items.filter((item) => item.status === "low_stock" || item.status === "out_of_stock");
-  }
+// ==========================================
+// 3. Stock Adjustments & Restocking (Admin)
+// ==========================================
+inventoryRouter.post(
+  ["/api/inventory/adjust", "/inventory/adjust"],
+  optionalAuthenticate,
+  validate({ body: adjustStockSchema }),
+  controller.adjustStock
+);
 
-  if (search && typeof search === "string" && search.trim() !== "") {
-    const q = search.toLowerCase().trim();
-    items = items.filter(
-      (item) =>
-        item.sku.toLowerCase().includes(q) ||
-        item.productName.toLowerCase().includes(q) ||
-        item.brandName.toLowerCase().includes(q) ||
-        item.warehouse.toLowerCase().includes(q)
-    );
-  }
+inventoryRouter.post(
+  ["/api/inventory/restock", "/inventory/restock"],
+  optionalAuthenticate,
+  validate({ body: restockSchema }),
+  controller.restockProduct
+);
 
-  res.json(items);
-});
+inventoryRouter.post(
+  ["/api/inventory/:id/restock", "/inventory/:id/restock"],
+  optionalAuthenticate,
+  validate({ body: restockSchema }),
+  controller.restockProduct
+);
 
-inventoryRouter.get("/api/inventory/:id", (req: Request, res: Response) => {
-  const { id } = req.params;
-  const item = inventoryCatalog.find((i) => i.id === id);
-  if (!item) {
-    res.status(404).json({ error: "Inventory item not found", id });
-    return;
-  }
-  res.json(item);
-});
+inventoryRouter.put(
+  ["/api/inventory/:id/threshold", "/inventory/:id/threshold"],
+  optionalAuthenticate,
+  validate({ body: updateThresholdSchema }),
+  controller.updateThreshold
+);
 
-inventoryRouter.post("/api/inventory/adjust", (req: Request, res: Response) => {
-  const { inventoryItemId, type, quantity, reason, notes, performedBy } = req.body;
-  const index = inventoryCatalog.findIndex((i) => i.id === inventoryItemId);
-  const current = inventoryCatalog[index];
+inventoryRouter.put(
+  ["/api/inventory/:id/stock", "/inventory/:id/stock"],
+  optionalAuthenticate,
+  validate({ body: updateStockSchema }),
+  controller.updateStock
+);
 
-  if (index === -1 || !current) {
-    res.status(404).json({ error: "Inventory item not found", inventoryItemId });
-    return;
-  }
+inventoryRouter.patch(
+  ["/api/inventory/:id/stock", "/inventory/:id/stock"],
+  optionalAuthenticate,
+  validate({ body: updateStockSchema }),
+  controller.updateStock
+);
 
-  const prevStock = current.stockQuantity;
-  let newStock = prevStock;
-  const changeAmountNum = Number(quantity) || 0;
+// ==========================================
+// 4. Stock Change Audit Log & Movements (Admin)
+// ==========================================
+inventoryRouter.get(
+  [
+    "/api/inventory/movements",
+    "/inventory/movements",
+    "/api/inventory-movements",
+    "/inventory-movements",
+  ],
+  optionalAuthenticate,
+  validate({ query: queryMovementsSchema }),
+  controller.getStockMovements
+);
 
-  if (type === "add") {
-    newStock = prevStock + changeAmountNum;
-  } else if (type === "subtract") {
-    newStock = Math.max(0, prevStock - changeAmountNum);
-  } else if (type === "set") {
-    newStock = Math.max(0, changeAmountNum);
-  }
+// ==========================================
+// 5. Inventory Collection & Detail
+// (Must be declared after static sub-paths)
+// ==========================================
+inventoryRouter.get(
+  ["/api/inventory", "/inventory"],
+  optionalAuthenticate,
+  validate({ query: queryInventorySchema }),
+  controller.getInventory
+);
 
-  const changeDelta = newStock - prevStock;
-  const newStatus = calculateStockStatus(newStock, current.lowStockThreshold);
-  const newAvailable = Math.max(0, newStock - current.reservedQuantity);
-  const newTotalVal = newStock * current.unitCost;
-
-  const updated: InventoryItemRecord = {
-    ...current,
-    stockQuantity: newStock,
-    availableQuantity: newAvailable,
-    totalValue: newTotalVal,
-    status: newStatus,
-    lastRestocked: type === "add" ? new Date().toISOString() : current.lastRestocked,
-    updatedAt: new Date().toISOString(),
-  };
-
-  inventoryCatalog[index] = updated;
-
-  const movement: InventoryMovementRecord = {
-    id: `mov-${Date.now().toString(36)}`,
-    inventoryItemId,
-    sku: current.sku,
-    productName: current.productName,
-    changeAmount: changeDelta,
-    previousStock: prevStock,
-    newStock,
-    reason: reason || "audit_correction",
-    notes: notes || "Manual inventory adjustment via Admin console",
-    performedBy: performedBy || "System Admin",
-    createdAt: new Date().toISOString(),
-  };
-
-  inventoryMovements.unshift(movement);
-
-  res.json({ item: updated, movement });
-});
-
-inventoryRouter.put("/api/inventory/:id/threshold", (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { lowStockThreshold, reorderPoint } = req.body;
-  const index = inventoryCatalog.findIndex((i) => i.id === id);
-  const current = inventoryCatalog[index];
-
-  if (index === -1 || !current) {
-    res.status(404).json({ error: "Inventory item not found", id });
-    return;
-  }
-
-  const newThreshold = Number(lowStockThreshold) ?? current.lowStockThreshold;
-  const newReorder = Number(reorderPoint) ?? current.reorderPoint;
-  const newStatus = calculateStockStatus(current.stockQuantity, newThreshold);
-
-  const updated: InventoryItemRecord = {
-    ...current,
-    lowStockThreshold: newThreshold,
-    reorderPoint: newReorder,
-    status: newStatus,
-    updatedAt: new Date().toISOString(),
-  };
-
-  inventoryCatalog[index] = updated;
-  res.json(updated);
-});
-
-inventoryRouter.get("/api/inventory-movements", (req: Request, res: Response) => {
-  const { itemId } = req.query;
-  let movements = [...inventoryMovements];
-
-  if (itemId && typeof itemId === "string") {
-    movements = movements.filter((m) => m.inventoryItemId === itemId);
-  }
-
-  res.json(movements);
-});
+inventoryRouter.get(
+  ["/api/inventory/:id", "/inventory/:id"],
+  optionalAuthenticate,
+  controller.getInventoryById
+);

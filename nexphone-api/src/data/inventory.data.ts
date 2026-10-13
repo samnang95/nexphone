@@ -30,7 +30,14 @@ export interface InventoryMovementRecord {
   changeAmount: number;
   previousStock: number;
   newStock: number;
-  reason: "restock_po" | "audit_correction" | "damage_writeoff" | "customer_return" | "warehouse_transfer";
+  reason:
+    | "restock_po"
+    | "audit_correction"
+    | "damage_writeoff"
+    | "customer_return"
+    | "warehouse_transfer"
+    | "order_fulfillment"
+    | "order_cancellation";
   notes: string;
   performedBy: string;
   createdAt: string;

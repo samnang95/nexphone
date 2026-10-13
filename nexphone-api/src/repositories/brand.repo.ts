@@ -14,9 +14,7 @@ export interface PaginationOptions {
   page: number;
   limit: number;
 }
-
 let seeded = false;
-
 export async function ensureBrandsSeeded(): Promise<void> {
   if (seeded || !isDatabaseConnected()) return;
   try {
@@ -38,7 +36,6 @@ export const brandRepository = {
     pagination?: PaginationOptions
   ): Promise<{ brands: any[]; total: number }> {
     await ensureBrandsSeeded();
-
     if (isDatabaseConnected()) {
       return this.findMongo(filters, sortField, pagination);
     }

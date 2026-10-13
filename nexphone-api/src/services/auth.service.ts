@@ -7,7 +7,6 @@ import { User, type UserDocument } from "../models/user.model";
 import { RevokedToken } from "../models/revokedToken.model";
 import {
   issueTokenPair,
-  signAccessToken,
   verifyRefreshToken,
   type AccessTokenPayload,
   type RefreshTokenPayload,
@@ -19,13 +18,9 @@ import {
   type RegisterInput,
   type ResetPasswordInput,
 } from "../validators/auth.validator";
-import { serializeAuthUser, authResponse } from "../views/auth.view";
-
+import { serializeAuthUser } from "../views/auth.view";
 export { serializeAuthUser };
-
-/** Wrong guesses allowed per issued recovery code before it is invalidated. */
 const MAX_RESET_ATTEMPTS = 5;
-
 const INVALID_CREDENTIALS = "Invalid credentials. Please verify your email and password.";
 
 function resetCodeHash(code: string): string {
@@ -46,7 +41,6 @@ export async function register(input: RegisterInput) {
   const _id = new Types.ObjectId();
   const user = new User({
     _id,
-    // Role, status, and tier are decided here, never taken from the request.
     role: "customer",
     status: "active",
     tier: input.accountType?.toLowerCase() === "enterprise" ? "Enterprise" : "Regular",
@@ -78,31 +72,23 @@ async function findLoginCandidate(identifier: string): Promise<UserDocument | nu
   if (id.includes("@")) {
     return User.findOne({ email: id }).select("+passwordHash");
   }
-  // Phone-number login (customers only). Ambiguous numbers never match.
   const digits = id.replace(/\D/g, "");
   if (digits.length < 6) return null;
   const matches = await User.find({ phoneNormalized: digits, role: "customer" }).select("+passwordHash").limit(2);
   return matches.length === 1 ? (matches[0] ?? null) : null;
 }
 
-/**
- * `audience` keeps the two surfaces apart: the storefront login only accepts customers,
- * the admin login only accepts staff. A mismatch looks exactly like a wrong password.
- */
 export async function login(input: LoginInput, audience: "customer" | "admin") {
   const user = await findLoginCandidate(input.email);
   if (!user) {
     await burnPasswordCheck(input.password);
     throw HttpError.unauthorized(INVALID_CREDENTIALS, "INVALID_CREDENTIALS");
   }
-
   const passwordOk = await verifyPassword(input.password, user.passwordHash);
   const audienceOk = audience === "admin" ? user.role !== "customer" : user.role === "customer";
   if (!passwordOk || !audienceOk) {
     throw HttpError.unauthorized(INVALID_CREDENTIALS, "INVALID_CREDENTIALS");
   }
-
-  // Only reveal the suspension after the password was proven correct.
   if (user.status === "disabled") {
     throw new HttpError(
       403,
@@ -110,15 +96,12 @@ export async function login(input: LoginInput, audience: "customer" | "admin") {
       "ACCOUNT_DISABLED"
     );
   }
-
   const now = new Date();
   await User.updateOne({ _id: user._id }, { lastLoginAt: now });
   user.lastLoginAt = now;
-
   return { ...issueTokenPair(user), user: serializeAuthUser(user) };
 }
 
-/** Revokes access token and/or refresh token. Safe to call repeatedly. */
 export async function logout(
   accessToken: AccessTokenPayload | null,
   refreshTokenPayload: RefreshTokenPayload | null = null
@@ -152,26 +135,21 @@ export async function refreshToken(rawRefreshToken: string) {
   } catch {
     throw HttpError.unauthorized("Invalid or expired refresh token.", "TOKEN_INVALID");
   }
-
   const [user, revoked] = await Promise.all([
     User.findById(payload.sub),
     RevokedToken.exists({ jti: payload.jti }),
   ]);
-
   if (!user || revoked || user.tokenVersion !== payload.ver) {
     throw HttpError.unauthorized("Invalid or expired refresh token.", "TOKEN_INVALID");
   }
   if (user.status === "disabled") {
     throw HttpError.forbidden("This account has been suspended.", "ACCOUNT_DISABLED");
   }
-
-  // Invalidate old refresh token (single-use rotation)
   await RevokedToken.updateOne(
     { jti: payload.jti },
     { $setOnInsert: { jti: payload.jti, expiresAt: new Date(payload.exp * 1000) } },
     { upsert: true }
   );
-
   const tokens = issueTokenPair(user);
   return {
     ...tokens,
@@ -182,15 +160,11 @@ export async function refreshToken(rawRefreshToken: string) {
 export async function forgotPassword(email: string) {
   const normalized = email.trim().toLowerCase();
   const user = await User.findOne({ email: normalized, role: "customer", status: "active" });
-
-  // The response is identical whether or not the account exists.
   const response: { success: true; message: string; code?: string } = {
     success: true,
     message: "If an account matches this email, a 6-digit recovery code has been issued.",
   };
-
   if (!user) return response;
-
   const code = String(randomInt(100000, 1000000));
   await User.updateOne(
     { _id: user._id },
@@ -200,7 +174,6 @@ export async function forgotPassword(email: string) {
       passwordResetAttempts: 0,
     }
   );
-
   if (config.exposeResetCode) {
     // Development convenience only: no email provider is configured yet.
     response.code = code;
@@ -213,8 +186,6 @@ export async function forgotPassword(email: string) {
 export async function resetPassword(input: ResetPasswordInput) {
   const fail = () => HttpError.badRequest(RESET_INVALID_CODE, "INVALID_RESET_CODE");
   const email = input.email.trim().toLowerCase();
-
-  // Consume an attempt atomically, so parallel guesses cannot exceed the limit.
   const user = await User.findOneAndUpdate(
     {
       email,
@@ -227,13 +198,9 @@ export async function resetPassword(input: ResetPasswordInput) {
     { $inc: { passwordResetAttempts: 1 } },
     { new: true }
   ).select("+passwordResetCodeHash");
-
   if (!user?.passwordResetCodeHash) throw fail();
   if (!safeEqualHex(user.passwordResetCodeHash, resetCodeHash(input.code))) throw fail();
-
   const passwordHash = await hashPassword(input.newPassword);
-
-  // Single use: only succeeds while the same code hash is still stored.
   const result = await User.updateOne(
     { _id: user._id, passwordResetCodeHash: user.passwordResetCodeHash },
     {
@@ -251,22 +218,18 @@ export async function changePassword(userId: unknown, input: ChangePasswordInput
   if (input.confirmPassword !== undefined && input.confirmPassword !== input.newPassword) {
     throw HttpError.badRequest("New password and confirmation do not match.", "PASSWORD_MISMATCH");
   }
-
   const user = await User.findById(userId).select("+passwordHash");
   if (!user) throw HttpError.unauthorized("Invalid or expired session token.", "TOKEN_INVALID");
-
   if (!(await verifyPassword(input.currentPassword, user.passwordHash))) {
     throw HttpError.badRequest("Current password is incorrect.", "INVALID_CURRENT_PASSWORD");
   }
   if (input.currentPassword === input.newPassword) {
     throw HttpError.badRequest("New password must be different from the current password.", "PASSWORD_UNCHANGED");
   }
-
   user.passwordHash = await hashPassword(input.newPassword);
   user.passwordChangedAt = new Date();
-  user.tokenVersion += 1; // every other session is signed out
+  user.tokenVersion += 1;
   await user.save();
-
   return {
     success: true,
     message: "Password changed successfully.",

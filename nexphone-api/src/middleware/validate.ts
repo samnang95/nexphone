@@ -7,12 +7,6 @@ interface Schemas {
   params?: ZodType;
 }
 
-/**
- * Validates request parts with zod. Failures are forwarded to the error handler as 400s.
- * - `req.body` is replaced with the parsed value (unknown keys are stripped, which also
- *   blocks mass-assignment of fields such as `role`).
- * - Express 5 makes `req.query` read-only, so parsed query/params go to `res.locals`.
- */
 export function validate(schemas: Schemas): RequestHandler {
   return (req, res, next) => {
     try {

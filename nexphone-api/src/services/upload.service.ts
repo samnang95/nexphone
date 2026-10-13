@@ -13,9 +13,6 @@ export interface UploadResult {
 }
 
 export const uploadService = {
-  /**
-   * Upload a memory buffer (e.g. from multer) to Cloudinary
-   */
   async uploadBuffer(
     buffer: Buffer,
     options: {
@@ -27,9 +24,7 @@ export const uploadService = {
     if (!isCloudinaryConfigured()) {
       throw HttpError.internal("Cloudinary storage is not configured.", "STORAGE_NOT_CONFIGURED");
     }
-
     const { folder = "nexphone/general", publicId, transformation } = options;
-
     return new Promise<UploadResult>((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -65,9 +60,6 @@ export const uploadService = {
     });
   },
 
-  /**
-   * Upload base64 or Data URI string to Cloudinary
-   */
   async uploadBase64(
     dataUri: string,
     options: { folder?: string; publicId?: string } = {}
@@ -102,9 +94,6 @@ export const uploadService = {
     }
   },
 
-  /**
-   * Delete an image by its public_id
-   */
   async deleteImage(publicId: string): Promise<boolean> {
     if (!isCloudinaryConfigured()) return false;
     try {

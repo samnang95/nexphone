@@ -7,9 +7,7 @@ export async function uploadSingleImage(req: Request, res: Response): Promise<vo
   if (!req.file) {
     throw HttpError.badRequest("Please select an image file to upload.", "NO_FILE_PROVIDED");
   }
-
   const folder = typeof req.query.folder === "string" ? req.query.folder : "nexphone/uploads";
-
   const result = await uploadService.uploadBuffer(req.file.buffer, {
     folder,
   });
@@ -23,7 +21,6 @@ export async function uploadSingleImage(req: Request, res: Response): Promise<vo
 
 export async function uploadUserAvatar(req: Request, res: Response): Promise<void> {
   let secureUrl = "";
-
   if (req.file) {
     const result = await uploadService.uploadBuffer(req.file.buffer, {
       folder: "nexphone/avatars",
@@ -42,9 +39,7 @@ export async function uploadUserAvatar(req: Request, res: Response): Promise<voi
   } else {
     throw HttpError.badRequest("Please provide an image file or base64 data.", "NO_IMAGE_PROVIDED");
   }
-
   const updatedUser = await userService.updateAvatar(req.auth!.user._id, secureUrl);
-
   res.json({
     success: true,
     message: "Avatar uploaded and updated successfully.",

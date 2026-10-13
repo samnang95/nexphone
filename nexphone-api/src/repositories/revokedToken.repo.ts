@@ -5,7 +5,6 @@ export const revokedTokenRepo = {
     try {
       await RevokedToken.create({ jti, expiresAt });
     } catch {
-      // Duplicate jti is already revoked; ignore
     }
   },
 

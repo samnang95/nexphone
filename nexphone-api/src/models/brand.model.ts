@@ -83,5 +83,4 @@ BrandSchema.index({
   description: "text",
 });
 
-export const Brand: Model<BrandDocument> =
-  mongoose.models.Brand || mongoose.model<BrandDocument>("Brand", BrandSchema);
+export const Brand: Model<BrandDocument> = mongoose.models.Brand || mongoose.model<BrandDocument>("Brand", BrandSchema);

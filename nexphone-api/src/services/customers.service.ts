@@ -20,9 +20,7 @@ export const customersService = {
   async getCustomers(query: CustomerQueryFilters = {}): Promise<any[]> {
     const { search, status, tier, sortBy } = query;
     let allCustomers = await customersRepo.getAllCustomers();
-
     let results = allCustomers;
-
     if (typeof search === "string" && search.trim()) {
       const q = search.trim().toLowerCase();
       results = results.filter(
@@ -135,11 +133,9 @@ export const customersService = {
         vipCustomers: counts.vip,
       };
     }
-
     const allCustomers = await customersRepo.getAllCustomers();
     const totalLtv = allCustomers.reduce((acc, c) => acc + c.metrics.totalSpent, 0);
     const avgSpendPerCustomer = counts.total > 0 ? totalLtv / counts.total : 0;
-
     return {
       totalCustomers: counts.total,
       activeCustomers: counts.active,

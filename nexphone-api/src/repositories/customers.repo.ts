@@ -10,8 +10,6 @@ export const customersRepo = {
       try {
         const dbUsers = await User.find({ role: "customer" }).sort({ createdAt: -1 });
         const dbRecords = dbUsers.map(serializeCustomerRecord);
-
-        // Merge: DB users take precedence if emails overlap
         const dbEmails = new Set(dbRecords.map((r) => r.email.toLowerCase()));
         const remainingSeed = customersStore.filter((s) => !dbEmails.has(s.email.toLowerCase()));
         return [...dbRecords, ...remainingSeed];
@@ -31,7 +29,6 @@ export const customersRepo = {
         const user = await User.findOne(query);
         if (user) return { userDoc: user };
       } catch {
-        // Fallback to store
       }
     }
 

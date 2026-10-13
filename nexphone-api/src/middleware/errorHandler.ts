@@ -14,10 +14,6 @@ interface BodyParserError extends Error {
   type?: string;
 }
 
-/**
- * Central error handler. Always answers JSON shaped `{ error, code?, details? }`.
- * Never leaks stack traces or internal messages for unexpected errors.
- */
 export function errorHandler(err: unknown, req: Request, res: Response, next: NextFunction): void {
   if (res.headersSent) {
     next(err);
@@ -41,7 +37,6 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
 
   const e = err as BodyParserError & { code?: number };
 
-  // body-parser (malformed JSON / payload too large)
   if (e.type === "entity.parse.failed") {
     res.status(400).json({ error: "Request body is not valid JSON.", code: "INVALID_JSON" });
     return;
@@ -51,13 +46,10 @@ export function errorHandler(err: unknown, req: Request, res: Response, next: Ne
     return;
   }
 
-  // CORS rejection thrown by the cors() origin callback
   if (typeof e.message === "string" && e.message.startsWith("CORS blocked")) {
     res.status(403).json({ error: "Origin not allowed.", code: "CORS_BLOCKED" });
     return;
   }
-
-  // Mongoose / MongoDB
   if (err instanceof MongooseError.ValidationError) {
     res.status(400).json({ error: "Validation failed.", code: "VALIDATION_ERROR", details: Object.keys(err.errors) });
     return;
