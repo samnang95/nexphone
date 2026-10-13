@@ -17,12 +17,18 @@ export interface NotificationRecord {
   openRate: number;
   clickRate: number;
   actionUrl?: string;
+  recipientId?: string;
+  recipientEmail?: string;
+  isRead?: boolean;
+  readAt?: string | null;
+  readBy?: string[];
   metadata?: {
     orderId?: string;
     productId?: string;
     promoCode?: string;
     trackingNumber?: string;
     badge?: string;
+    [key: string]: any;
   };
   createdAt: string;
   updatedAt: string;

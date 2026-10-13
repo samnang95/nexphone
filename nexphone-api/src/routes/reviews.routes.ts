@@ -18,19 +18,12 @@ export const reviewsRouter = Router();
 // ==========================================
 // 1. Get Product Reviews (Must stay before :id routes)
 // ==========================================
-reviewsRouter.get(
-  ["/api/reviews/product/:productId", "/reviews/product/:productId"],
-  optionalAuthenticate,
-  controller.getProductReviews
-);
+reviewsRouter.get(["/api/reviews/product/:productId", "/reviews/product/:productId"], optionalAuthenticate, controller.getProductReviews);
 
 // ==========================================
 // 2. Metrics & Dashboard Analytics (Admin)
 // ==========================================
-reviewsRouter.get(["/api/reviews-metrics", "/reviews-metrics", "/api/reviews/metrics", "/reviews/metrics"],
-  optionalAuthenticate,
-  controller.getReviewMetrics
-);
+reviewsRouter.get(["/api/reviews-metrics", "/reviews-metrics", "/api/reviews/metrics", "/reviews/metrics"], optionalAuthenticate, controller.getReviewMetrics);
 
 // ==========================================
 // 3. Report Inappropriate Review
