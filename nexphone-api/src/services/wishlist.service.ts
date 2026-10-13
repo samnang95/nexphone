@@ -9,17 +9,11 @@ import type { AddToWishlistInput, ToggleWishlistInput } from "../validators/wish
 import { HttpError } from "../utils/httpError";
 
 export const wishlistService = {
-  /**
-   * 1. Get Wishlist
-   */
   async getWishlist(userId?: string, sessionId?: string): Promise<WishlistResponseView> {
     const wishlist = await wishlistRepository.getOrCreateWishlist(userId, sessionId);
     return serializeWishlist(wishlist);
   },
 
-  /**
-   * 2. Add Phone to Wishlist
-   */
   async addToWishlist(
     input: AddToWishlistInput,
     userId?: string,
@@ -27,7 +21,6 @@ export const wishlistService = {
   ): Promise<WishlistResponseView> {
     const wishlist = await wishlistRepository.getOrCreateWishlist(userId, sessionId);
 
-    // Verify phone product exists
     const product = await productRepository.findByIdOrSlug(input.productId);
     if (!product) {
       throw HttpError.notFound(`Product not found: ${input.productId}`);
@@ -39,7 +32,6 @@ export const wishlistService = {
     );
 
     if (existingIndex > -1) {
-      // Idempotent: update variant selection if specified
       if (input.selectedColor) {
         wishlist.items[existingIndex].selectedColor = input.selectedColor;
       }
@@ -84,9 +76,6 @@ export const wishlistService = {
     return serializeWishlist(saved);
   },
 
-  /**
-   * 3. Remove Phone from Wishlist
-   */
   async removeFromWishlist(
     productId: string,
     userId?: string,
@@ -107,9 +96,6 @@ export const wishlistService = {
     return serializeWishlist(saved);
   },
 
-  /**
-   * 4. Clear Wishlist
-   */
   async clearWishlist(userId?: string, sessionId?: string): Promise<WishlistResponseView> {
     const wishlist = await wishlistRepository.getOrCreateWishlist(userId, sessionId);
     wishlist.items = [];
@@ -117,9 +103,6 @@ export const wishlistService = {
     return serializeWishlist(saved);
   },
 
-  /**
-   * Check if Phone is in Wishlist
-   */
   async isInWishlist(
     productId: string,
     userId?: string,
@@ -137,9 +120,6 @@ export const wishlistService = {
     return { inWishlist: inList, productId };
   },
 
-  /**
-   * Toggle Phone in Wishlist (Add if missing, remove if present)
-   */
   async toggleWishlist(
     input: ToggleWishlistInput,
     userId?: string,

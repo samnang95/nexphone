@@ -21,6 +21,7 @@ import {
   uploadRouter,
   cartRouter,
   wishlistRouter,
+  comparisonRouter,
 } from "./routes";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 
@@ -66,6 +67,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 app.use(["/api/auth", "/auth"], authRouter);
 app.use(["/api/user", "/api/users", "/user"], userRouter);
 app.use(["/api/upload", "/api/uploads"], uploadRouter);
+app.use(["/api/compare", "/compare", "/api/products/compare"], comparisonRouter);
 app.use(["/api/products", "/api/phones"], productsRouter);
 app.use("/api/brands", brandsRouter);
 app.use(["/api/cart", "/cart"], cartRouter);

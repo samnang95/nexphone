@@ -16,3 +16,4 @@ export { systemRouter } from "./system.routes";
 export { uploadRouter } from "./upload.routes";
 export { cartRouter } from "./cart.routes";
 export { wishlistRouter } from "./wishlist.routes";
+export { comparisonRouter } from "./comparison.routes";
