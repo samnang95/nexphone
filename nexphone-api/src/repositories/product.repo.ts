@@ -238,16 +238,32 @@ export const productRepository = {
 
   async findByIdOrSlug(idOrSlug: string): Promise<any | null> {
     await ensureSeeded();
+    const legacyAliases: Record<string, string> = {
+      p1: "prod-001",
+      p2: "prod-002",
+      p3: "prod-003",
+      p4: "prod-004",
+    };
+    const resolvedId = legacyAliases[idOrSlug.toLowerCase()] || idOrSlug;
 
     if (isDatabaseConnected()) {
       const product = await Product.findOne({
-        $or: [{ id: idOrSlug }, { slug: idOrSlug.toLowerCase() }],
+        $or: [
+          { id: idOrSlug },
+          { id: resolvedId },
+          { slug: idOrSlug.toLowerCase() },
+          { slug: resolvedId.toLowerCase() },
+        ],
       });
       if (product) return product;
     }
 
     const found = productsCatalog.find(
-      (p) => p.id === idOrSlug || p.slug === idOrSlug.toLowerCase()
+      (p) =>
+        p.id === idOrSlug ||
+        p.id === resolvedId ||
+        p.slug === idOrSlug.toLowerCase() ||
+        p.slug === resolvedId.toLowerCase()
     );
     return found || null;
   },
@@ -274,10 +290,24 @@ export const productRepository = {
 
   async update(idOrSlug: string, updates: any): Promise<any | null> {
     const timestamp = new Date().toISOString();
+    const legacyAliases: Record<string, string> = {
+      p1: "prod-001",
+      p2: "prod-002",
+      p3: "prod-003",
+      p4: "prod-004",
+    };
+    const resolvedId = legacyAliases[idOrSlug.toLowerCase()] || idOrSlug;
 
     if (isDatabaseConnected()) {
       const updated = await Product.findOneAndUpdate(
-        { $or: [{ id: idOrSlug }, { slug: idOrSlug.toLowerCase() }] },
+        {
+          $or: [
+            { id: idOrSlug },
+            { id: resolvedId },
+            { slug: idOrSlug.toLowerCase() },
+            { slug: resolvedId.toLowerCase() },
+          ],
+        },
         { $set: { ...updates, updatedAt: timestamp } },
         { returnDocument: "after", runValidators: true }
       );
@@ -289,7 +319,11 @@ export const productRepository = {
     }
 
     const index = productsCatalog.findIndex(
-      (p) => p.id === idOrSlug || p.slug === idOrSlug.toLowerCase()
+      (p) =>
+        p.id === idOrSlug ||
+        p.id === resolvedId ||
+        p.slug === idOrSlug.toLowerCase() ||
+        p.slug === resolvedId.toLowerCase()
     );
     const target = productsCatalog[index];
     if (!target) return null;

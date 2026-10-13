@@ -17,6 +17,8 @@ import {
   updateModel3DSchema,
 } from "../validators/product.validator";
 import * as controller from "../controllers/product.controller";
+import * as reviewController from "../controllers/review.controller";
+import { createReviewSchema } from "../validators/review.validator";
 
 export const productsRouter = Router();
 
@@ -73,6 +75,12 @@ productsRouter.patch("/:id/images/primary", authenticate, requireAdmin, validate
 productsRouter.get("/:id/model-3d", optionalAuthenticate, controller.getModel3D);
 productsRouter.put("/:id/model-3d", authenticate, requireAdmin, validate({ body: updateModel3DSchema }), controller.updateModel3D);
 productsRouter.patch("/:id/model-3d", authenticate, requireAdmin, validate({ body: updateModel3DSchema }), controller.updateModel3D);
+
+// ==========================================
+// Sub-Resource: Product Reviews & Ratings
+// ==========================================
+productsRouter.get("/:id/reviews", optionalAuthenticate, reviewController.getProductReviews);
+productsRouter.post("/:id/reviews", optionalAuthenticate, validate({ body: createReviewSchema }), reviewController.createReview);
 
 // Core Phone details and CRUD (must stay after sub-resource routes to avoid greedy :id matching subpaths)
 productsRouter.get("/:id", optionalAuthenticate, controller.getPhoneByIdOrSlug);
