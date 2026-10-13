@@ -25,18 +25,8 @@ cartRouter.post("/", optionalAuthenticate, validate({ body: addToCartSchema }), 
 // ==========================================
 // 3. Update Cart Item Quantity
 // ==========================================
-cartRouter.put(
-  "/items/:itemId",
-  optionalAuthenticate,
-  validate({ body: updateCartItemQuantitySchema }),
-  controller.updateCartItemQuantity
-);
-cartRouter.patch(
-  "/items/:itemId",
-  optionalAuthenticate,
-  validate({ body: updateCartItemQuantitySchema }),
-  controller.updateCartItemQuantity
-);
+cartRouter.put("/items/:itemId", optionalAuthenticate, validate({ body: updateCartItemQuantitySchema }), controller.updateCartItemQuantity);
+cartRouter.patch("/items/:itemId", optionalAuthenticate, validate({ body: updateCartItemQuantitySchema }), controller.updateCartItemQuantity);
 
 // ==========================================
 // 4. Remove Cart Item
@@ -53,12 +43,7 @@ cartRouter.post("/clear", optionalAuthenticate, controller.clearCart);
 // ==========================================
 // 6. Calculate Subtotal and Total
 // ==========================================
-cartRouter.post(
-  "/calculate",
-  optionalAuthenticate,
-  validate({ body: calculateCartSchema }),
-  controller.calculateTotals
-);
+cartRouter.post("/calculate", optionalAuthenticate, validate({ body: calculateCartSchema }), controller.calculateTotals);
 
 // ==========================================
 // 7. Promo Code Management
