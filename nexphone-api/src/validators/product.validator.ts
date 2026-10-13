@@ -78,6 +78,60 @@ export const queryProductSchema = z.object({
   paginated: z.enum(["true", "false", "1", "0"]).optional(),
 });
 
+export const addColorSchema = colorOptionSchema
+  .omit({ id: true })
+  .extend({ id: z.string().trim().optional() });
+
+export const updateColorSchema = colorOptionSchema.omit({ id: true }).partial();
+
+export const addStorageSchema = storageVariantSchema
+  .omit({ id: true })
+  .extend({ id: z.string().trim().optional() });
+
+export const updateStorageSchema = storageVariantSchema.omit({ id: true }).partial();
+
+export const updatePricingSchema = z.object({
+  basePrice: z.number().positive().optional(),
+  compareAtPrice: z.number().positive().optional().nullable(),
+  costPrice: z.number().positive().optional().nullable(),
+  variantPrices: z
+    .array(
+      z.object({
+        id: z.string().trim().min(1),
+        price: z.number().positive(),
+        comparePrice: z.number().positive().optional().nullable(),
+      })
+    )
+    .optional(),
+});
+
+export const updateSpecificationsSchema = z.record(z.string(), z.any());
+
+export const addImageSchema = z.object({
+  imageUrl: z.string().url().optional(),
+  images: z.array(z.string().url()).optional(),
+}).refine((data) => Boolean(data.imageUrl || (data.images && data.images.length > 0)), {
+  message: "Either 'imageUrl' or 'images' array must be provided",
+});
+
+export const deleteImageSchema = z.object({
+  imageUrl: z.string().url("Valid image URL to delete is required"),
+});
+
+export const setPrimaryImageSchema = z.object({
+  imageUrl: z.string().url("Valid image URL is required"),
+});
+
+export const updateModel3DSchema = model3DSchema.partial();
+
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type QueryProductInput = z.infer<typeof queryProductSchema>;
+export type AddColorInput = z.infer<typeof addColorSchema>;
+export type UpdateColorInput = z.infer<typeof updateColorSchema>;
+export type AddStorageInput = z.infer<typeof addStorageSchema>;
+export type UpdateStorageInput = z.infer<typeof updateStorageSchema>;
+export type UpdatePricingInput = z.infer<typeof updatePricingSchema>;
+export type UpdateSpecificationsInput = z.infer<typeof updateSpecificationsSchema>;
+export type AddImageInput = z.infer<typeof addImageSchema>;
+export type UpdateModel3DInput = z.infer<typeof updateModel3DSchema>;

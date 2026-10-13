@@ -280,7 +280,7 @@ export const productRepository = {
     if (isDatabaseConnected()) {
       const updated = await Product.findOneAndUpdate(
         { $or: [{ id: idOrSlug }, { slug: idOrSlug.toLowerCase() }] },
-        { ...updates, updatedAt: timestamp },
+        { $set: { ...updates, updatedAt: timestamp } },
         { returnDocument: "after", runValidators: true }
       );
       if (updated) {

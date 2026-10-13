@@ -7,7 +7,6 @@ import {
 } from "../services/token.service";
 import * as authService from "../services/auth.service";
 
-/** Logout must never fail the client, so a missing/invalid token is simply ignored. */
 function tryReadToken(req: Request): AccessTokenPayload | null {
   const header = req.headers.authorization;
   if (!header?.startsWith("Bearer ")) return null;

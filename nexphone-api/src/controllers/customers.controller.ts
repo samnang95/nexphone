@@ -1,12 +1,7 @@
 import type { Request, Response } from "express";
 import { customersService } from "../services/customers.service";
 
-// Re-export serializers for backward compatibility if any callers import from controller
 export { serializeCustomerRecord, sanitizeCustomer } from "../views/customers.view";
-
-/**
- * Customers Controller (Thin C in MVC: req -> service -> view -> res)
- */
 
 export async function getCustomers(req: Request, res: Response): Promise<void> {
   const result = await customersService.getCustomers(req.query);

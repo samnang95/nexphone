@@ -61,7 +61,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 });
 
 // Feature modules
-app.use(["/api/auth", "/auth"], authRouter); // "/auth" is the legacy alias without the /api prefix
+app.use(["/api/auth", "/auth"], authRouter);
 app.use(["/api/user", "/api/users", "/user"], userRouter);
 app.use(["/api/upload", "/api/uploads"], uploadRouter);
 app.use(["/api/products", "/api/phones"], productsRouter);
