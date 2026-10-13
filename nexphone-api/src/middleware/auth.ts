@@ -64,3 +64,4 @@ export const authorize =
   };
 
 export const requireAdmin = authorize("admin", "super_admin");
+export const requireCustomer = authorize("customer");

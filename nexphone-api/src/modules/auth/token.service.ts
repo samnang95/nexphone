@@ -13,16 +13,55 @@ export interface AccessTokenPayload {
   exp: number;
   iat: number;
   iss: string;
+  type?: "access";
+}
+
+export interface RefreshTokenPayload {
+  sub: string;
+  ver: number;
+  jti: string;
+  exp: number;
+  iat: number;
+  iss: string;
+  type: "refresh";
 }
 
 export function signAccessToken(user: UserDocument): string {
-  return jwt.sign({ ver: user.tokenVersion, role: user.role }, config.jwtSecret, {
-    algorithm: "HS256",
-    issuer: ISSUER,
-    subject: String(user._id),
-    jwtid: randomUUID(),
-    expiresIn: config.jwtExpiresIn as SignOptions["expiresIn"],
-  });
+  return jwt.sign(
+    { ver: user.tokenVersion, role: user.role, type: "access" },
+    config.jwtSecret,
+    {
+      algorithm: "HS256",
+      issuer: ISSUER,
+      subject: String(user._id),
+      jwtid: randomUUID(),
+      expiresIn: config.jwtExpiresIn as SignOptions["expiresIn"],
+    }
+  );
+}
+
+export function signRefreshToken(user: UserDocument): string {
+  return jwt.sign(
+    { ver: user.tokenVersion, type: "refresh" },
+    config.jwtSecret,
+    {
+      algorithm: "HS256",
+      issuer: ISSUER,
+      subject: String(user._id),
+      jwtid: randomUUID(),
+      expiresIn: "30d",
+    }
+  );
+}
+
+export function issueTokenPair(user: UserDocument) {
+  const accessToken = signAccessToken(user);
+  const refreshToken = signRefreshToken(user);
+  return {
+    accessToken,
+    refreshToken,
+    token: accessToken, // backwards compatibility with existing clients
+  };
 }
 
 /** Throws if the token is malformed, expired, signed with another key/algorithm, or has an unexpected shape. */
@@ -32,9 +71,24 @@ export function verifyAccessToken(token: string): AccessTokenPayload {
     typeof decoded === "string" ||
     typeof decoded.sub !== "string" ||
     typeof decoded.jti !== "string" ||
-    typeof decoded.ver !== "number"
+    typeof decoded.ver !== "number" ||
+    (decoded as { type?: string }).type === "refresh"
   ) {
     throw new Error("Malformed access token payload");
   }
   return decoded as unknown as AccessTokenPayload;
+}
+
+export function verifyRefreshToken(token: string): RefreshTokenPayload {
+  const decoded = jwt.verify(token, config.jwtSecret, { algorithms: ["HS256"], issuer: ISSUER });
+  if (
+    typeof decoded === "string" ||
+    typeof decoded.sub !== "string" ||
+    typeof decoded.jti !== "string" ||
+    typeof decoded.ver !== "number" ||
+    (decoded as { type?: string }).type !== "refresh"
+  ) {
+    throw new Error("Malformed refresh token payload");
+  }
+  return decoded as unknown as RefreshTokenPayload;
 }

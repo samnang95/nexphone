@@ -1,22 +1,8 @@
 import mongoose from "mongoose";
 import { config } from "./env";
-
-// Note: do NOT set `bufferCommands = false` globally. Mongoose reads that option when a model is
-// compiled, so its effect would depend on import order (models created earlier keep buffering) and
-// it breaks autoIndex/autoCreate for models compiled before the connection opens. Routes that need
-// the database are guarded by `requireDatabase`, which answers 503 immediately instead.
-
 export function isDatabaseConnected(): boolean {
   return mongoose.connection.readyState === 1;
 }
-
-/**
- * Connects to MongoDB.
- *
- * - dev: logs a warning and keeps running so modules still backed by in-memory seed data work.
- * - staging/prod: throws, so the process can exit instead of serving from volatile memory.
- *   Set ALLOW_STANDALONE_MODE=true to opt out (not recommended).
- */
 export async function connectDatabase(): Promise<void> {
   mongoose.connection.on("error", (err) => {
     console.error("❌ [Database] Connection error:", err.message);

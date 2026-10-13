@@ -8,6 +8,7 @@ import {
   changePasswordSchema,
   forgotPasswordSchema,
   loginSchema,
+  refreshTokenSchema,
   registerSchema,
   resetPasswordSchema,
 } from "./auth.schemas";
@@ -16,8 +17,6 @@ export const authRouter = Router();
 
 authRouter.use(requireDatabase);
 
-// Each sensitive endpoint gets its own counter. Limiters run before validation so
-// malformed attempts count too. Successful logins do not consume the login budget.
 authRouter.post(
   "/register",
   createRateLimiter(),
@@ -37,6 +36,12 @@ authRouter.post(
   controller.adminLogin
 );
 authRouter.post("/logout", controller.logout);
+authRouter.post(
+  ["/refresh-token", "/refresh"],
+  createRateLimiter(),
+  validate({ body: refreshTokenSchema }),
+  controller.refreshToken
+);
 authRouter.post(
   "/forgot-password",
   createRateLimiter(),

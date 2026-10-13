@@ -4,9 +4,6 @@ import dotenv from "dotenv";
 
 export type Flavor = "dev" | "staging" | "prod";
 
-/**
- * Parses a CLI argument formatted as --key=value or --key value
- */
 function parseCliFlag(name: string): string | null {
   const prefix = `--${name}=`;
   const arg = process.argv.find((a) => a.startsWith(prefix));
@@ -20,9 +17,6 @@ function parseCliFlag(name: string): string | null {
   return null;
 }
 
-/**
- * Normalizes raw flavor input to standard 'dev' | 'staging' | 'prod'
- */
 function normalizeFlavor(val?: string | null): Flavor {
   const lower = (val || "").toLowerCase().trim();
   if (["dev", "development", "local"].includes(lower)) return "dev";
@@ -86,19 +80,10 @@ export interface AppConfig {
   jwtExpiresIn: string;
   corsOrigins: string[];
   bcryptRounds: number;
-  /** Max attempts per window on sensitive auth endpoints (login, register, forgot/reset password). */
   authRateLimitMax: number;
   authRateLimitWindowMs: number;
   resetCodeTtlMinutes: number;
-  /**
-   * Include the password-reset code in the forgot-password response.
-   * Only ever honoured in the dev flavor (no email provider is configured yet).
-   */
   exposeResetCode: boolean;
-  /**
-   * Allow staging/prod to start without a database (serves in-memory seed data for
-   * modules that have not been migrated yet). Never enabled by default.
-   */
   allowStandaloneMode: boolean;
 }
 

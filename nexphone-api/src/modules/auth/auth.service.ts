@@ -5,7 +5,13 @@ import { HttpError } from "../../utils/httpError";
 import { burnPasswordCheck, hashPassword, verifyPassword } from "../../utils/password";
 import { User, type UserDocument } from "../users/user.model";
 import { RevokedToken } from "./revokedToken.model";
-import { signAccessToken, type AccessTokenPayload } from "./token.service";
+import {
+  issueTokenPair,
+  signAccessToken,
+  verifyRefreshToken,
+  type AccessTokenPayload,
+  type RefreshTokenPayload,
+} from "./token.service";
 import {
   RESET_INVALID_CODE,
   type ChangePasswordInput,
@@ -78,7 +84,7 @@ export async function register(input: RegisterInput) {
     throw err;
   }
 
-  return { token: signAccessToken(user), user: serializeAuthUser(user) };
+  return { ...issueTokenPair(user), user: serializeAuthUser(user) };
 }
 
 async function findLoginCandidate(identifier: string): Promise<UserDocument | null> {
@@ -123,17 +129,68 @@ export async function login(input: LoginInput, audience: "customer" | "admin") {
   await User.updateOne({ _id: user._id }, { lastLoginAt: now });
   user.lastLoginAt = now;
 
-  return { token: signAccessToken(user), user: serializeAuthUser(user) };
+  return { ...issueTokenPair(user), user: serializeAuthUser(user) };
 }
 
-/** Revokes only the presented token (this session). Safe to call repeatedly. */
-export async function logout(token: AccessTokenPayload | null): Promise<void> {
-  if (!token) return;
+/** Revokes access token and/or refresh token. Safe to call repeatedly. */
+export async function logout(
+  accessToken: AccessTokenPayload | null,
+  refreshTokenPayload: RefreshTokenPayload | null = null
+): Promise<void> {
+  const operations: Promise<unknown>[] = [];
+  if (accessToken) {
+    operations.push(
+      RevokedToken.updateOne(
+        { jti: accessToken.jti },
+        { $setOnInsert: { jti: accessToken.jti, expiresAt: new Date(accessToken.exp * 1000) } },
+        { upsert: true }
+      )
+    );
+  }
+  if (refreshTokenPayload) {
+    operations.push(
+      RevokedToken.updateOne(
+        { jti: refreshTokenPayload.jti },
+        { $setOnInsert: { jti: refreshTokenPayload.jti, expiresAt: new Date(refreshTokenPayload.exp * 1000) } },
+        { upsert: true }
+      )
+    );
+  }
+  await Promise.all(operations);
+}
+
+export async function refreshToken(rawRefreshToken: string) {
+  let payload: RefreshTokenPayload;
+  try {
+    payload = verifyRefreshToken(rawRefreshToken);
+  } catch {
+    throw HttpError.unauthorized("Invalid or expired refresh token.", "TOKEN_INVALID");
+  }
+
+  const [user, revoked] = await Promise.all([
+    User.findById(payload.sub),
+    RevokedToken.exists({ jti: payload.jti }),
+  ]);
+
+  if (!user || revoked || user.tokenVersion !== payload.ver) {
+    throw HttpError.unauthorized("Invalid or expired refresh token.", "TOKEN_INVALID");
+  }
+  if (user.status === "disabled") {
+    throw HttpError.forbidden("This account has been suspended.", "ACCOUNT_DISABLED");
+  }
+
+  // Invalidate old refresh token (single-use rotation)
   await RevokedToken.updateOne(
-    { jti: token.jti },
-    { $setOnInsert: { jti: token.jti, expiresAt: new Date(token.exp * 1000) } },
+    { jti: payload.jti },
+    { $setOnInsert: { jti: payload.jti, expiresAt: new Date(payload.exp * 1000) } },
     { upsert: true }
   );
+
+  const tokens = issueTokenPair(user);
+  return {
+    ...tokens,
+    user: serializeAuthUser(user),
+  };
 }
 
 export async function forgotPassword(email: string) {
@@ -224,10 +281,9 @@ export async function changePassword(userId: unknown, input: ChangePasswordInput
   user.tokenVersion += 1; // every other session is signed out
   await user.save();
 
-  // The caller keeps working with a fresh token.
   return {
     success: true,
     message: "Password changed successfully.",
-    token: signAccessToken(user),
+    ...issueTokenPair(user),
   };
 }

@@ -65,9 +65,16 @@ export const changePasswordSchema = z.object({
   confirmPassword: z.string().optional(),
 });
 
+export const refreshTokenSchema = z.object({
+  refreshToken: z
+    .string({ error: "Refresh token is required." })
+    .trim()
+    .min(1, "Refresh token is required."),
+});
+
 export type RegisterInput = z.infer<typeof registerSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
-
+export type RefreshTokenInput = z.infer<typeof refreshTokenSchema>;
 export { RESET_INVALID_CODE };
