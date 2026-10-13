@@ -22,6 +22,7 @@ import {
   cartRouter,
   wishlistRouter,
   comparisonRouter,
+  checkoutRouter,
 } from "./routes";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 
@@ -72,6 +73,7 @@ app.use(["/api/products", "/api/phones"], productsRouter);
 app.use("/api/brands", brandsRouter);
 app.use(["/api/cart", "/cart"], cartRouter);
 app.use(["/api/wishlist", "/wishlist"], wishlistRouter);
+app.use(["/api/checkout", "/checkout", "/api/payment", "/payment"], checkoutRouter);
 
 // Legacy in-memory feature modules (mounted at root; each router declares full paths).
 // Order preserved from the original monolithic app.ts.

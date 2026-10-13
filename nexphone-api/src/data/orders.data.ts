@@ -5,11 +5,13 @@
 export interface OrderRecord {
   id: string;
   orderNumber: string;
+  sessionId?: string;
+  userId?: string;
   createdAt: string;
   updatedAt: string;
   status: "pending" | "confirmed" | "processing" | "shipped" | "delivered" | "cancelled";
   customer: {
-    id: string;
+    id?: string;
     name: string;
     email: string;
     phone: string;
@@ -47,11 +49,15 @@ export interface OrderRecord {
   shippingFee: number;
   discount: number;
   totalAmount: number;
+  total?: number;
+  appliedPromo?: any;
   payment: {
     status: "paid" | "pending" | "refunded" | "failed";
     method: "credit_card" | "stripe" | "apple_pay" | "corporate_wire" | "purchase_order";
     methodLabel: string;
     transactionId?: string;
+    clientSecret?: string;
+    failureReason?: string;
     paidAt?: string;
     amount: number;
     currency: string;
