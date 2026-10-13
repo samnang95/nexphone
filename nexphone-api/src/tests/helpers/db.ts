@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import { User, type UserRole } from "../../modules/users/user.model";
-import { RevokedToken } from "../../modules/auth/revokedToken.model";
+import { User, type UserRole } from "../../models/user.model";
+import { RevokedToken } from "../../models/revokedToken.model";
 import { hashPassword } from "../../utils/password";
 
 let mongod: MongoMemoryServer | undefined;

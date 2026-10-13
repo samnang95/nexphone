@@ -1,7 +1,7 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import request from "supertest";
 import { app } from "../app";
-import { User } from "../modules/users/user.model";
+import { User } from "../models/user.model";
 import { clearTestDb, createTestUser, startTestDb, stopTestDb, TEST_PASSWORD } from "./helpers/db";
 
 beforeAll(startTestDb);

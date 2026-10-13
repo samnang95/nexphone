@@ -2,21 +2,23 @@ import express, { type Request, type Response, type NextFunction } from "express
 import cors from "cors";
 import helmet from "helmet";
 import { config } from "./config/env";
-import { authRouter } from "./modules/auth/auth.routes";
-import { userRouter } from "./modules/users/user.routes";
-import { systemRouter } from "./modules/system/system.routes";
-import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
-import { productsRouter } from "./modules/products/products.routes";
-import { brandsRouter } from "./modules/brands/brands.routes";
-import { inventoryRouter } from "./modules/inventory/inventory.routes";
-import { ordersRouter } from "./modules/orders/orders.routes";
-import { customersRouter } from "./modules/customers/customers.routes";
-import { reviewsRouter } from "./modules/reviews/reviews.routes";
-import { promotionsRouter } from "./modules/promotions/promotions.routes";
-import { contentRouter } from "./modules/content/content.routes";
-import { notificationsRouter } from "./modules/notifications/notifications.routes";
-import { settingsRouter } from "./modules/settings/settings.routes";
-import { analyticsRouter } from "./modules/analytics/analytics.routes";
+import {
+  authRouter,
+  userRouter,
+  systemRouter,
+  dashboardRouter,
+  productsRouter,
+  brandsRouter,
+  inventoryRouter,
+  ordersRouter,
+  customersRouter,
+  reviewsRouter,
+  promotionsRouter,
+  contentRouter,
+  notificationsRouter,
+  settingsRouter,
+  analyticsRouter,
+} from "./routes";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 
 export const app = express();

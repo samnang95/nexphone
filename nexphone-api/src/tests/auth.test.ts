@@ -6,7 +6,7 @@ import mongoose from "mongoose";
 import { app } from "../app";
 import { authenticate, requireAdmin } from "../middleware/auth";
 import { errorHandler } from "../middleware/errorHandler";
-import { User } from "../modules/users/user.model";
+import { User } from "../models/user.model";
 import { clearTestDb, createTestUser, startTestDb, stopTestDb, TEST_PASSWORD } from "./helpers/db";
 
 const SECRET = process.env.JWT_SECRET!;

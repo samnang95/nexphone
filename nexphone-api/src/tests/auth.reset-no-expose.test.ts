@@ -1,13 +1,10 @@
 import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import request from "supertest";
 
-vi.hoisted(() => {
-  // Same switch an operator would flip: the reset code must never appear in a response when disabled.
-  process.env.EXPOSE_RESET_CODE_IN_DEV = "false";
-});
+vi.hoisted(() => {process.env.EXPOSE_RESET_CODE_IN_DEV = "false"});
 
 import { app } from "../app";
-import { User } from "../modules/users/user.model";
+import { User } from "../models/user.model";
 import { clearTestDb, createTestUser, startTestDb, stopTestDb, TEST_PASSWORD } from "./helpers/db";
 
 beforeAll(startTestDb);

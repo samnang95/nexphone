@@ -1,0 +1,15 @@
+export { authRouter } from "./auth.routes";
+export { userRouter } from "./user.routes";
+export { customersRouter } from "./customers.routes";
+export { productsRouter } from "./products.routes";
+export { brandsRouter } from "./brands.routes";
+export { inventoryRouter } from "./inventory.routes";
+export { ordersRouter } from "./orders.routes";
+export { reviewsRouter } from "./reviews.routes";
+export { promotionsRouter } from "./promotions.routes";
+export { contentRouter } from "./content.routes";
+export { notificationsRouter } from "./notifications.routes";
+export { settingsRouter } from "./settings.routes";
+export { analyticsRouter } from "./analytics.routes";
+export { dashboardRouter } from "./dashboard.routes";
+export { systemRouter } from "./system.routes";

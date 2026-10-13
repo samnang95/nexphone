@@ -1,17 +1,8 @@
-/**
- * Secure provisioning of the initial administrator.
- *
- *   ADMIN_SEED_EMAIL=owner@example.com ADMIN_SEED_PASSWORD='<12+ chars>' npm run seed:admin -- --flavor=dev
- *
- * - Credentials come only from the environment; nothing is hard-coded or printed.
- * - Idempotent: if the account already exists it is left untouched (the password is NOT overwritten).
- * - Creates a `super_admin`. Run once per environment, then remove the variables.
- */
 import mongoose from "mongoose";
 import { z } from "zod";
 import { config } from "../config/env";
 import { connectDatabase, isDatabaseConnected } from "../config/database";
-import { User } from "../modules/users/user.model";
+import { User } from "../models/user.model";
 import { hashPassword } from "../utils/password";
 
 const inputSchema = z.object({

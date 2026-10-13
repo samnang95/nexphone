@@ -4,7 +4,7 @@ import express from "express";
 import { app } from "../app";
 import { authenticate, authorize, requireAdmin, requireCustomer } from "../middleware/auth";
 import { errorHandler } from "../middleware/errorHandler";
-import { User } from "../modules/users/user.model";
+import { User } from "../models/user.model";
 import { clearTestDb, createTestUser, startTestDb, stopTestDb, TEST_PASSWORD } from "./helpers/db";
 
 // Test app for role-based authorization verification

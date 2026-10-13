@@ -1,9 +1,9 @@
 import type { RequestHandler } from "express";
 import { isValidObjectId } from "mongoose";
 import { HttpError } from "../utils/httpError";
-import { verifyAccessToken, type AccessTokenPayload } from "../modules/auth/token.service";
-import { RevokedToken } from "../modules/auth/revokedToken.model";
-import { User, type UserDocument, type UserRole } from "../modules/users/user.model";
+import { verifyAccessToken, type AccessTokenPayload } from "../services/token.service";
+import { RevokedToken } from "../models/revokedToken.model";
+import { User, type UserDocument, type UserRole } from "../models/user.model";
 
 export interface AuthContext {
   user: UserDocument;
