@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { config } from "./config/env";
 import { authRouter } from "./modules/auth/auth.routes";
+import { userRouter } from "./modules/users/user.routes";
 import { systemRouter } from "./modules/system/system.routes";
 import { dashboardRouter } from "./modules/dashboard/dashboard.routes";
 import { productsRouter } from "./modules/products/products.routes";
@@ -58,6 +59,7 @@ app.use((req: Request, _res: Response, next: NextFunction) => {
 
 // Feature modules
 app.use(["/api/auth", "/auth"], authRouter); // "/auth" is the legacy alias without the /api prefix
+app.use(["/api/user", "/api/users", "/user"], userRouter);
 
 // Legacy in-memory feature modules (mounted at root; each router declares full paths).
 // Order preserved from the original monolithic app.ts.

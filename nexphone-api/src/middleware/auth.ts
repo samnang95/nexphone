@@ -42,11 +42,14 @@ export const authenticate: RequestHandler = async (req, _res, next) => {
     RevokedToken.exists({ jti: payload.jti }),
   ]);
 
-  if (!user || revoked || user.tokenVersion !== payload.ver) {
+  if (!user || revoked) {
     throw HttpError.unauthorized("Invalid or expired session token.", "TOKEN_INVALID");
   }
   if (user.status === "disabled") {
     throw HttpError.forbidden("This account has been suspended.", "ACCOUNT_DISABLED");
+  }
+  if (user.tokenVersion !== payload.ver) {
+    throw HttpError.unauthorized("Invalid or expired session token.", "TOKEN_INVALID");
   }
 
   req.auth = { user, token: payload };
