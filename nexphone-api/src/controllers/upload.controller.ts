@@ -3,6 +3,9 @@ import { uploadService } from "../services/upload.service";
 import * as userService from "../services/user.service";
 import { HttpError } from "../utils/httpError";
 
+// ==========================================
+// Backward Compatible General & Avatar Uploads
+// ==========================================
 export async function uploadSingleImage(req: Request, res: Response): Promise<void> {
   if (!req.file) {
     throw HttpError.badRequest("Please select an image file to upload.", "NO_FILE_PROVIDED");
@@ -46,4 +49,76 @@ export async function uploadUserAvatar(req: Request, res: Response): Promise<voi
     avatarUrl: secureUrl,
     user: updatedUser,
   });
+}
+
+// ==========================================
+// 1. Upload Product Images
+// ==========================================
+export async function uploadProductImage(req: Request, res: Response): Promise<void> {
+  const result = await uploadService.uploadProductImage(req.file, req.body, req.auth?.user);
+  res.status(201).json(result);
+}
+
+// ==========================================
+// 2. Upload Brand Logos
+// ==========================================
+export async function uploadBrandLogo(req: Request, res: Response): Promise<void> {
+  const result = await uploadService.uploadBrandLogo(req.file, req.body, req.auth?.user);
+  res.status(201).json(result);
+}
+
+// ==========================================
+// 3. Upload Homepage Banners
+// ==========================================
+export async function uploadHomepageBanner(req: Request, res: Response): Promise<void> {
+  const result = await uploadService.uploadHomepageBanner(req.file, req.body, req.auth?.user);
+  res.status(201).json(result);
+}
+
+// ==========================================
+// 4. Upload 3D Phone Models
+// ==========================================
+export async function upload3DModel(req: Request, res: Response): Promise<void> {
+  const result = await uploadService.upload3DModel(req.file, req.body, req.auth?.user);
+  res.status(201).json(result);
+}
+
+// ==========================================
+// 5. Delete Uploaded Files
+// ==========================================
+export async function deleteFile(req: Request, res: Response): Promise<void> {
+  const targetId =
+    (req.params.id as string) ||
+    (req.params[0] as string) ||
+    (req.query.publicId as string) ||
+    (req.query.fileId as string) ||
+    (req.body?.publicId as string) ||
+    (req.body?.fileId as string);
+
+  if (!targetId) {
+    throw HttpError.badRequest("Please provide a file ID or publicId to delete.", "TARGET_REQUIRED");
+  }
+
+  const result = await uploadService.deleteFile(targetId, req.auth?.user);
+  res.json(result);
+}
+
+// ==========================================
+// 6. List & Get Uploaded Files
+// ==========================================
+export async function listFiles(req: Request, res: Response): Promise<void> {
+  const result = await uploadService.listFiles({
+    assetType: req.query.assetType as string,
+    folder: req.query.folder as string,
+    search: req.query.search as string,
+    page: req.query.page ? Number(req.query.page) : undefined,
+    limit: req.query.limit ? Number(req.query.limit) : undefined,
+  });
+  res.json(result);
+}
+
+export async function getFileById(req: Request, res: Response): Promise<void> {
+  const id = String(req.params.id || "");
+  const result = await uploadService.getFileById(id);
+  res.json(result);
 }
