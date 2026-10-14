@@ -20,3 +20,4 @@ export { comparisonRouter } from "./comparison.routes";
 export { checkoutRouter } from "./checkout.routes";
 export { homepageRouter } from "./homepage.routes";
 export { reportsRouter } from "./reports.routes";
+export { adminRouter } from "./admin.routes";
