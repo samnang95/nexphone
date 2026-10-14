@@ -1,5 +1,6 @@
 import { Router, type Request, type Response } from "express";
 import { config } from "../config/env";
+import * as settingsController from "../controllers/settings.controller";
 
 export const systemRouter = Router();
 
@@ -13,15 +14,11 @@ systemRouter.get("/", (_req: Request, res: Response) => {
   });
 });
 
-// Health check endpoint
-systemRouter.get("/api/health", (_req: Request, res: Response) => {
-  res.json({
-    status: "ok",
-    flavor: config.flavor,
-    uptimeSeconds: Math.floor(process.uptime()),
-    timestamp: new Date().toISOString(),
-  });
-});
+// Health check endpoints (/health, /api/health, and container orchestration probes)
+systemRouter.get(
+  ["/health", "/api/health", "/healthz", "/livez", "/readyz"],
+  settingsController.getHealthCheck
+);
 
 // Flavor inspection endpoint
 systemRouter.get("/api/flavor", (_req: Request, res: Response) => {

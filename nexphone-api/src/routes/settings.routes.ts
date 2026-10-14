@@ -1,6 +1,89 @@
 import { Router, type Request, type Response } from "express";
+import { authenticate, requireAdmin, optionalAuthenticate } from "../middleware/auth";
+import { validate } from "../middleware/validate";
+import {
+  updateStoreSettingsSchema,
+  updateShippingSettingsSchema,
+  updatePaymentSettingsSchema,
+} from "../validators/settings.validator";
+import * as controller from "../controllers/settings.controller";
 
 export const settingsRouter = Router();
+
+// ==========================================
+// 1. Store Settings (Storefront & Admin)
+// ==========================================
+settingsRouter.get(
+  ["/api/settings", "/settings", "/api/settings/store", "/settings/store", "/api/admin/settings/store"],
+  optionalAuthenticate,
+  controller.getStoreSettings
+);
+
+settingsRouter.put(
+  ["/api/settings", "/settings", "/api/settings/store", "/settings/store", "/api/admin/settings/store"],
+  authenticate,
+  requireAdmin,
+  validate({ body: updateStoreSettingsSchema }),
+  controller.updateStoreSettings
+);
+
+settingsRouter.patch(
+  ["/api/settings", "/settings", "/api/settings/store", "/settings/store", "/api/admin/settings/store"],
+  authenticate,
+  requireAdmin,
+  validate({ body: updateStoreSettingsSchema }),
+  controller.updateStoreSettings
+);
+
+// ==========================================
+// 2. Shipping Settings (Storefront & Admin)
+// ==========================================
+settingsRouter.get(
+  ["/api/settings/shipping", "/settings/shipping", "/api/shipping/settings", "/shipping/settings"],
+  optionalAuthenticate,
+  controller.getShippingSettings
+);
+
+settingsRouter.put(
+  ["/api/settings/shipping", "/settings/shipping", "/api/shipping/settings", "/shipping/settings"],
+  authenticate,
+  requireAdmin,
+  validate({ body: updateShippingSettingsSchema }),
+  controller.updateShippingSettings
+);
+
+settingsRouter.patch(
+  ["/api/settings/shipping", "/settings/shipping", "/api/shipping/settings", "/shipping/settings"],
+  authenticate,
+  requireAdmin,
+  validate({ body: updateShippingSettingsSchema }),
+  controller.updateShippingSettings
+);
+
+// ==========================================
+// 3. Payment Settings (Storefront & Admin)
+// ==========================================
+settingsRouter.get(
+  ["/api/settings/payment", "/settings/payment", "/api/payment/settings", "/payment/settings"],
+  optionalAuthenticate,
+  controller.getPaymentSettings
+);
+
+settingsRouter.put(
+  ["/api/settings/payment", "/settings/payment", "/api/payment/settings", "/payment/settings"],
+  authenticate,
+  requireAdmin,
+  validate({ body: updatePaymentSettingsSchema }),
+  controller.updatePaymentSettings
+);
+
+settingsRouter.patch(
+  ["/api/settings/payment", "/settings/payment", "/api/payment/settings", "/payment/settings"],
+  authenticate,
+  requireAdmin,
+  validate({ body: updatePaymentSettingsSchema }),
+  controller.updatePaymentSettings
+);
 
 // ==========================================
 // Admin Profile, Password & Settings APIs
