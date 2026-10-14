@@ -24,6 +24,7 @@ import {
   comparisonRouter,
   checkoutRouter,
   homepageRouter,
+  reportsRouter,
 } from "./routes";
 import { errorHandler, notFound } from "./middleware/errorHandler";
 
@@ -90,6 +91,7 @@ app.use(homepageRouter);
 app.use(notificationsRouter);
 app.use(settingsRouter);
 app.use(analyticsRouter);
+app.use(reportsRouter);
 
 // ==========================================
 // Fallbacks (must stay last)

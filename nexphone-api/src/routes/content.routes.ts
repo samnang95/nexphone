@@ -41,146 +41,24 @@ contentRouter.delete(["/api/content/banners/:id", "/api/homepage/banners/:id", "
 // ==========================================
 // 3. Featured Products API
 // ==========================================
-contentRouter.get(
-  [
-    "/api/content/featured",
-    "/api/homepage/featured-products",
-    "/api/homepage/featured",
-    "/api/products/featured",
-  ],
-  optionalAuthenticate,
-  validate({ query: queryFeaturedProductsSchema }),
-  controller.getFeaturedProducts
-);
-
-contentRouter.post(
-  [
-    "/api/content/featured",
-    "/api/homepage/featured-products",
-    "/api/homepage/featured",
-  ],
-  optionalAuthenticate,
-  validate({ body: createFeaturedProductSchema }),
-  controller.createFeaturedProduct
-);
-
-contentRouter.put(
-  [
-    "/api/content/featured/:id",
-    "/api/homepage/featured-products/:id",
-    "/api/homepage/featured/:id",
-  ],
-  optionalAuthenticate,
-  validate({ body: updateFeaturedProductSchema }),
-  controller.updateFeaturedProduct
-);
-
-contentRouter.patch(
-  [
-    "/api/content/featured/:id",
-    "/api/homepage/featured-products/:id",
-    "/api/homepage/featured/:id",
-  ],
-  optionalAuthenticate,
-  validate({ body: updateFeaturedProductSchema }),
-  controller.updateFeaturedProduct
-);
-
-contentRouter.delete(
-  [
-    "/api/content/featured/:id",
-    "/api/homepage/featured-products/:id",
-    "/api/homepage/featured/:id",
-  ],
-  optionalAuthenticate,
-  controller.deleteFeaturedProduct
-);
+contentRouter.get(["/api/content/featured","/api/homepage/featured-products","/api/homepage/featured","/api/products/featured",],optionalAuthenticate,validate({ query: queryFeaturedProductsSchema }),controller.getFeaturedProducts);
+contentRouter.post(["/api/content/featured","/api/homepage/featured-products","/api/homepage/featured",],optionalAuthenticate,validate({ body: createFeaturedProductSchema }),controller.createFeaturedProduct);
+contentRouter.put(["/api/content/featured/:id","/api/homepage/featured-products/:id","/api/homepage/featured/:id",],optionalAuthenticate,validate({ body: updateFeaturedProductSchema }),controller.updateFeaturedProduct);
+contentRouter.patch(["/api/content/featured/:id","/api/homepage/featured-products/:id","/api/homepage/featured/:id",],optionalAuthenticate,validate({ body: updateFeaturedProductSchema }),controller.updateFeaturedProduct);
+contentRouter.delete(["/api/content/featured/:id","/api/homepage/featured-products/:id","/api/homepage/featured/:id",],optionalAuthenticate,controller.deleteFeaturedProduct);
 
 // ==========================================
 // 4. Promotional Sections API
 // ==========================================
-contentRouter.get(
-  [
-    "/api/content/promo-sections",
-    "/api/homepage/promotional-sections",
-    "/api/homepage/sections",
-  ],
-  optionalAuthenticate,
-  validate({ query: querySectionSchema }),
-  controller.getPromotionalSections
-);
+contentRouter.get(["/api/content/promo-sections","/api/homepage/promotional-sections","/api/homepage/sections",],optionalAuthenticate,validate({ query: querySectionSchema }),controller.getPromotionalSections);
+contentRouter.put(["/api/content/promo-sections/reorder","/api/homepage/sections/reorder","/api/homepage/promotional-sections/reorder",],optionalAuthenticate,validate({ body: reorderSectionsSchema }),controller.reorderPromotionalSections);
+contentRouter.post(["/api/content/promo-sections/reorder","/api/homepage/sections/reorder","/api/homepage/promotional-sections/reorder",],optionalAuthenticate,validate({ body: reorderSectionsSchema }),controller.reorderPromotionalSections);
+contentRouter.post(["/api/content/promo-sections","/api/homepage/promotional-sections","/api/homepage/sections",],optionalAuthenticate,validate({ body: createSectionSchema }),controller.createPromotionalSection);
+contentRouter.get(["/api/content/promo-sections/:id","/api/homepage/promotional-sections/:id","/api/homepage/sections/:id",],optionalAuthenticate,controller.getPromotionalSectionById);
+contentRouter.put(["/api/content/promo-sections/:id","/api/homepage/promotional-sections/:id","/api/homepage/sections/:id",],optionalAuthenticate,validate({ body: updateSectionSchema }),controller.updatePromotionalSection);
+contentRouter.patch(["/api/content/promo-sections/:id","/api/homepage/promotional-sections/:id","/api/homepage/sections/:id",],optionalAuthenticate,validate({ body: updateSectionSchema }),controller.updatePromotionalSection);
 
-contentRouter.put(
-  [
-    "/api/content/promo-sections/reorder",
-    "/api/homepage/sections/reorder",
-    "/api/homepage/promotional-sections/reorder",
-  ],
-  optionalAuthenticate,
-  validate({ body: reorderSectionsSchema }),
-  controller.reorderPromotionalSections
-);
-
-contentRouter.post(
-  [
-    "/api/content/promo-sections/reorder",
-    "/api/homepage/sections/reorder",
-    "/api/homepage/promotional-sections/reorder",
-  ],
-  optionalAuthenticate,
-  validate({ body: reorderSectionsSchema }),
-  controller.reorderPromotionalSections
-);
-
-contentRouter.post(
-  [
-    "/api/content/promo-sections",
-    "/api/homepage/promotional-sections",
-    "/api/homepage/sections",
-  ],
-  optionalAuthenticate,
-  validate({ body: createSectionSchema }),
-  controller.createPromotionalSection
-);
-
-contentRouter.get(
-  [
-    "/api/content/promo-sections/:id",
-    "/api/homepage/promotional-sections/:id",
-    "/api/homepage/sections/:id",
-  ],
-  optionalAuthenticate,
-  controller.getPromotionalSectionById
-);
-
-contentRouter.put(
-  [
-    "/api/content/promo-sections/:id",
-    "/api/homepage/promotional-sections/:id",
-    "/api/homepage/sections/:id",
-  ],
-  optionalAuthenticate,
-  validate({ body: updateSectionSchema }),
-  controller.updatePromotionalSection
-);
-
-contentRouter.patch(
-  [
-    "/api/content/promo-sections/:id",
-    "/api/homepage/promotional-sections/:id",
-    "/api/homepage/sections/:id",
-  ],
-  optionalAuthenticate,
-  validate({ body: updateSectionSchema }),
-  controller.updatePromotionalSection
-);
-
-contentRouter.delete(
-  [
-    "/api/content/promo-sections/:id",
-    "/api/homepage/promotional-sections/:id",
-    "/api/homepage/sections/:id",
-  ],
+contentRouter.delete(["/api/content/promo-sections/:id","/api/homepage/promotional-sections/:id","/api/homepage/sections/:id",],
   optionalAuthenticate,
   controller.deletePromotionalSection
 );
