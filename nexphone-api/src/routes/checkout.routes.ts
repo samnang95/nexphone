@@ -50,7 +50,6 @@ checkoutRouter.post(["/payment/verify", "/verify-payment"], optionalAuthenticate
 // 7. Create Payment
 // ==========================================
 checkoutRouter.post(["/payment", "/payment/create"], optionalAuthenticate, validate({ body: createPaymentSchema }), controller.createPayment);
-
 checkoutRouter.post("/:id/pay", optionalAuthenticate, validate({ body: createPaymentSchema }), controller.createPayment);
 
 // ==========================================

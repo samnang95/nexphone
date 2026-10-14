@@ -376,4 +376,121 @@ describe("Homepage Content API (Feature 16)", () => {
       expect(res.body).toHaveProperty("avgCtr");
     });
   });
+
+  // ==========================================
+  // 9. New Arrivals Storefront & Management
+  // ==========================================
+  describe("9. New Arrivals API", () => {
+    let newArrivalId = "";
+
+    it("GET /api/content/new-arrivals returns list of new arrivals", async () => {
+      const res = await request(app).get("/api/content/new-arrivals");
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThan(0);
+      expect(res.body[0]).toHaveProperty("id");
+      expect(res.body[0]).toHaveProperty("productName");
+      expect(res.body[0]).toHaveProperty("formattedPrice");
+    });
+
+    it("POST /api/content/new-arrivals creates a new arrival item", async () => {
+      const payload = {
+        productId: "p99",
+        productName: "NexPhone Horizon Fold",
+        productSubtitle: "Foldable OLED Display with Quantum Satellite Link",
+        productPrice: 1999,
+        tag: "Pre-order Now",
+        isPreOrder: true,
+      };
+      const res = await request(app).post("/api/content/new-arrivals").send(payload);
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty("id");
+      expect(res.body.productName).toBe("NexPhone Horizon Fold");
+      expect(res.body.isPreOrder).toBe(true);
+      newArrivalId = res.body.id;
+    });
+
+    it("GET /api/content/new-arrivals/:id retrieves item by ID", async () => {
+      const res = await request(app).get(`/api/content/new-arrivals/${newArrivalId}`);
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(newArrivalId);
+      expect(res.body.productName).toBe("NexPhone Horizon Fold");
+    });
+
+    it("PUT /api/content/new-arrivals/:id updates new arrival item", async () => {
+      const res = await request(app)
+        .put(`/api/content/new-arrivals/${newArrivalId}`)
+        .send({ tag: "Now Shipping", initialStock: 1000 });
+      expect(res.status).toBe(200);
+      expect(res.body.tag).toBe("Now Shipping");
+    });
+
+    it("DELETE /api/content/new-arrivals/:id deletes item", async () => {
+      const res = await request(app).delete(`/api/content/new-arrivals/${newArrivalId}`);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("message");
+
+      const checkRes = await request(app).get(`/api/content/new-arrivals/${newArrivalId}`);
+      expect(checkRes.status).toBe(404);
+    });
+  });
+
+  // ==========================================
+  // 10. Best Sellers Storefront & Management
+  // ==========================================
+  describe("10. Best Sellers API", () => {
+    let bestSellerId = "";
+
+    it("GET /api/content/best-sellers returns list of top selling phones", async () => {
+      const res = await request(app).get("/api/content/best-sellers");
+      expect(res.status).toBe(200);
+      expect(Array.isArray(res.body)).toBe(true);
+      expect(res.body.length).toBeGreaterThan(0);
+      expect(res.body[0]).toHaveProperty("id");
+      expect(res.body[0]).toHaveProperty("unitsSold");
+      expect(res.body[0]).toHaveProperty("formattedPrice");
+    });
+
+    it("POST /api/content/best-sellers creates a top seller entry", async () => {
+      const payload = {
+        productId: "p88",
+        productName: "NexPhone Cyber Lite",
+        productPrice: 799,
+        rank: 1,
+        unitsSold: 25000,
+        badge: "Global #1",
+      };
+      const res = await request(app).post("/api/content/best-sellers").send(payload);
+      expect(res.status).toBe(201);
+      expect(res.body).toHaveProperty("id");
+      expect(res.body.productName).toBe("NexPhone Cyber Lite");
+      expect(res.body.badge).toBe("Global #1");
+      bestSellerId = res.body.id;
+    });
+
+    it("GET /api/content/best-sellers/:id retrieves best seller by ID", async () => {
+      const res = await request(app).get(`/api/content/best-sellers/${bestSellerId}`);
+      expect(res.status).toBe(200);
+      expect(res.body.id).toBe(bestSellerId);
+    });
+
+    it("PUT /api/content/best-sellers/:id updates best seller properties", async () => {
+      const res = await request(app)
+        .put(`/api/content/best-sellers/${bestSellerId}`)
+        .send({ unitsSold: 30000, badge: "Triple Platinum" });
+      expect(res.status).toBe(200);
+      expect(res.body.unitsSold).toBe(30000);
+      expect(res.body.badge).toBe("Triple Platinum");
+    });
+
+    it("DELETE /api/content/best-sellers/:id deletes best seller item", async () => {
+      const res = await request(app).delete(`/api/content/best-sellers/${bestSellerId}`);
+      expect(res.status).toBe(200);
+      expect(res.body).toHaveProperty("message");
+
+      const checkRes = await request(app).get(`/api/content/best-sellers/${bestSellerId}`);
+      expect(checkRes.status).toBe(404);
+    });
+  });
 });
+

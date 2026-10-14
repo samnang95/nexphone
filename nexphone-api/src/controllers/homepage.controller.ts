@@ -100,7 +100,73 @@ export async function reorderPromotionalSections(req: Request, res: Response): P
 }
 
 // ==========================================
-// 4. Composite Homepage Overview & Metrics
+// 4. New Arrivals Management
+// ==========================================
+export async function getNewArrivals(req: Request, res: Response): Promise<void> {
+  const status = req.query.status as string | undefined;
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  const result = await homepageService.getNewArrivals({ status, limit });
+  res.json(result);
+}
+
+export async function getNewArrivalById(req: Request, res: Response): Promise<void> {
+  const id = String(req.params.id || "");
+  const result = await homepageService.getNewArrivalById(id);
+  res.json(result);
+}
+
+export async function createNewArrival(req: Request, res: Response): Promise<void> {
+  const result = await homepageService.createNewArrival(req.body, req.auth?.user);
+  res.status(201).json(result);
+}
+
+export async function updateNewArrival(req: Request, res: Response): Promise<void> {
+  const id = String(req.params.id || "");
+  const result = await homepageService.updateNewArrival(id, req.body, req.auth?.user);
+  res.json(result);
+}
+
+export async function deleteNewArrival(req: Request, res: Response): Promise<void> {
+  const id = String(req.params.id || "");
+  const result = await homepageService.deleteNewArrival(id, req.auth?.user);
+  res.json(result);
+}
+
+// ==========================================
+// 5. Best Sellers Management
+// ==========================================
+export async function getBestSellers(req: Request, res: Response): Promise<void> {
+  const status = req.query.status as string | undefined;
+  const limit = req.query.limit ? Number(req.query.limit) : undefined;
+  const result = await homepageService.getBestSellers({ status, limit });
+  res.json(result);
+}
+
+export async function getBestSellerById(req: Request, res: Response): Promise<void> {
+  const id = String(req.params.id || "");
+  const result = await homepageService.getBestSellerById(id);
+  res.json(result);
+}
+
+export async function createBestSeller(req: Request, res: Response): Promise<void> {
+  const result = await homepageService.createBestSeller(req.body, req.auth?.user);
+  res.status(201).json(result);
+}
+
+export async function updateBestSeller(req: Request, res: Response): Promise<void> {
+  const id = String(req.params.id || "");
+  const result = await homepageService.updateBestSeller(id, req.body, req.auth?.user);
+  res.json(result);
+}
+
+export async function deleteBestSeller(req: Request, res: Response): Promise<void> {
+  const id = String(req.params.id || "");
+  const result = await homepageService.deleteBestSeller(id, req.auth?.user);
+  res.json(result);
+}
+
+// ==========================================
+// 6. Composite Homepage Overview & Metrics
 // ==========================================
 export async function getHomepageOverview(_req: Request, res: Response): Promise<void> {
   const result = await homepageService.getHomepageOverview();
@@ -111,3 +177,4 @@ export async function getContentMetrics(_req: Request, res: Response): Promise<v
   const result = await homepageService.getContentMetrics();
   res.json(result);
 }
+

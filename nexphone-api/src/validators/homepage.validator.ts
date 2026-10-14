@@ -107,3 +107,44 @@ export const reorderSectionsSchema = z.object({
     )
     .optional(),
 });
+
+// ==========================================
+// 4. New Arrivals Validation Schemas
+// ==========================================
+export const createNewArrivalSchema = z.object({
+  productId: z.string().optional(),
+  productName: z.string().min(2, "Product name must be at least 2 characters"),
+  productSubtitle: z.string().optional(),
+  productPrice: z.coerce.number().min(0, "Price must be positive"),
+  productImage: z.string().optional(),
+  series: z.string().optional(),
+  releaseDate: z.string().optional(),
+  tag: z.string().optional().default("Just Dropped"),
+  isPreOrder: z.boolean().optional().default(false),
+  displayOrder: z.coerce.number().int().min(1).optional(),
+  status: z.enum(["active", "hidden"]).optional().default("active"),
+  initialStock: z.coerce.number().int().min(0).optional().default(500),
+});
+
+export const updateNewArrivalSchema = createNewArrivalSchema.partial();
+
+// ==========================================
+// 5. Best Sellers Validation Schemas
+// ==========================================
+export const createBestSellerSchema = z.object({
+  productId: z.string().optional(),
+  productName: z.string().min(2, "Product name must be at least 2 characters"),
+  productSubtitle: z.string().optional(),
+  productPrice: z.coerce.number().min(0, "Price must be positive"),
+  productImage: z.string().optional(),
+  series: z.string().optional(),
+  rank: z.coerce.number().int().min(1).optional(),
+  unitsSold: z.coerce.number().int().min(0).optional(),
+  badge: z.string().optional().default("Top Seller"),
+  satisfactionRate: z.coerce.number().min(0).max(100).optional().default(98.5),
+  monthlyGrowth: z.coerce.number().optional().default(12.0),
+  status: z.enum(["active", "hidden"]).optional().default("active"),
+});
+
+export const updateBestSellerSchema = createBestSellerSchema.partial();
+

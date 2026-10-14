@@ -4,6 +4,8 @@ import {
   serializeBanner,
   serializeFeaturedProduct,
   serializeSection,
+  serializeNewArrival,
+  serializeBestSeller,
   serializeHomepagePayload,
 } from "../views/homepage.view";
 
@@ -161,15 +163,101 @@ export class HomepageService {
   }
 
   // ==========================================
-  // 8. Composite Homepage Payload
+  // 8. New Arrivals Management
+  // ==========================================
+  async getNewArrivals(query: { status?: string; limit?: number } = {}) {
+    const items = await homepageRepository.getNewArrivals(query);
+    return items.map(serializeNewArrival);
+  }
+
+  async getNewArrivalById(id: string) {
+    const item = await homepageRepository.getNewArrivalById(id);
+    if (!item) {
+      throw HttpError.notFound(`New arrival item with ID "${id}" was not found.`);
+    }
+    return serializeNewArrival(item);
+  }
+
+  async createNewArrival(data: any, _currentUser?: any) {
+    if (!data.productName) {
+      throw HttpError.badRequest("Product name is required for new arrival entry.");
+    }
+    const created = await homepageRepository.createNewArrival(data);
+    return serializeNewArrival(created);
+  }
+
+  async updateNewArrival(id: string, updates: any, _currentUser?: any) {
+    const updated = await homepageRepository.updateNewArrival(id, updates);
+    if (!updated) {
+      throw HttpError.notFound(`New arrival item with ID "${id}" was not found.`);
+    }
+    return serializeNewArrival(updated);
+  }
+
+  async deleteNewArrival(id: string, _currentUser?: any) {
+    const deleted = await homepageRepository.deleteNewArrival(id);
+    if (!deleted) {
+      throw HttpError.notFound(`New arrival item with ID "${id}" was not found.`);
+    }
+    return {
+      message: "New arrival removed successfully",
+      item: serializeNewArrival(deleted),
+    };
+  }
+
+  // ==========================================
+  // 9. Best Sellers Management
+  // ==========================================
+  async getBestSellers(query: { status?: string; limit?: number } = {}) {
+    const items = await homepageRepository.getBestSellers(query);
+    return items.map(serializeBestSeller);
+  }
+
+  async getBestSellerById(id: string) {
+    const item = await homepageRepository.getBestSellerById(id);
+    if (!item) {
+      throw HttpError.notFound(`Best seller item with ID "${id}" was not found.`);
+    }
+    return serializeBestSeller(item);
+  }
+
+  async createBestSeller(data: any, _currentUser?: any) {
+    if (!data.productName) {
+      throw HttpError.badRequest("Product name is required for best seller entry.");
+    }
+    const created = await homepageRepository.createBestSeller(data);
+    return serializeBestSeller(created);
+  }
+
+  async updateBestSeller(id: string, updates: any, _currentUser?: any) {
+    const updated = await homepageRepository.updateBestSeller(id, updates);
+    if (!updated) {
+      throw HttpError.notFound(`Best seller item with ID "${id}" was not found.`);
+    }
+    return serializeBestSeller(updated);
+  }
+
+  async deleteBestSeller(id: string, _currentUser?: any) {
+    const deleted = await homepageRepository.deleteBestSeller(id);
+    if (!deleted) {
+      throw HttpError.notFound(`Best seller item with ID "${id}" was not found.`);
+    }
+    return {
+      message: "Best seller removed successfully",
+      item: serializeBestSeller(deleted),
+    };
+  }
+
+  // ==========================================
+  // 10. Composite Homepage Payload & Metrics
   // ==========================================
   async getHomepageOverview() {
     const [banners, featuredProducts, promotionalSections, newArrivals, bestSellers, metrics] = await Promise.all([
       homepageRepository.getBanners({ status: "active" }),
       homepageRepository.getFeaturedProducts({ status: "active" }),
       homepageRepository.getPromotionalSections({ status: "active" }),
-      homepageRepository.getNewArrivals(),
-      homepageRepository.getBestSellers(),
+      homepageRepository.getNewArrivals({ status: "active" }),
+      homepageRepository.getBestSellers({ status: "active" }),
       homepageRepository.getMetrics(),
     ]);
 
@@ -189,3 +277,4 @@ export class HomepageService {
 }
 
 export const homepageService = new HomepageService();
+
