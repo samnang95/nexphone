@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "App: NexPhone (Dev)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "nexphone-app",
+      "program": "lib/main_dev.dart",
+      "args": ["--flavor", "dev"]
+    },
+    {
+      "name": "App: NexPhone (Prod)",
+      "request": "launch",
+      "type": "dart",
+      "cwd": "nexphone-app",
+      "program": "lib/main_prod.dart",
+      "args": ["--flavor", "prod"]
+    }
+  ]
+}
