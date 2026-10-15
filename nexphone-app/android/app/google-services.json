@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "445393777051",
+    "project_id": "nexphone",
+    "storage_bucket": "nexphone.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445393777051:android:35fae9c107d3366c39313e",
+        "android_client_info": {
+          "package_name": "com.nexphone.nexphone_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-y6Y2GfvQ2hr9kyow_MgecF-31Uya0zE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:445393777051:android:3aa27dbe6f3ec66139313e",
+        "android_client_info": {
+          "package_name": "com.nexphone.nexphone_app.dev"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyC-y6Y2GfvQ2hr9kyow_MgecF-31Uya0zE"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

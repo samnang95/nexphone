@@ -1,30 +1,54 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:nexphone_app/app/di/injection.dart';
+import 'package:nexphone_app/app/router/app_router.dart';
+import 'package:nexphone_app/core/app/app.dart';
+import 'package:nexphone_app/core/config/app_environment.dart';
+import 'package:nexphone_app/core/localization/localization_service.dart';
+import 'package:nexphone_app/domain/products/entities/banner_entity.dart';
+import 'package:nexphone_app/domain/products/entities/product_entity.dart';
+import 'package:nexphone_app/domain/products/repositories/product_repository.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:nexphone_app/main.dart';
+class FakeTestProductRepository implements ProductRepository {
+  @override
+  Future<List<ProductEntity>> getProducts({String? category, String? search}) async => [];
+
+  @override
+  Future<ProductEntity?> getProductById(String id) async => null;
+
+  @override
+  Future<List<String>> getCategories() async => ['All'];
+
+  @override
+  Future<List<BannerEntity>> getBanners() async => [];
+}
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  setUp(() async {
+    TestWidgetsFlutterBinding.ensureInitialized();
+    AppRouter.reset();
+    AppEnvironment.setup(AppEnvironment.dev);
+    SharedPreferences.setMockInitialValues({});
+    await LocalizationService.init();
+    await sl.reset();
+    await initDependencies(baseUrl: 'http://localhost:4000');
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+    // Override repository with test repository to avoid pending Dio timers
+    await sl.unregister<ProductRepository>();
+    sl.registerLazySingleton<ProductRepository>(() => FakeTestProductRepository());
+  });
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
+  tearDown(() async {
+    AppRouter.reset();
+    await sl.reset();
+  });
+
+  testWidgets('NexPhone app initial load smoke test', (WidgetTester tester) async {
+    await tester.pumpWidget(const NexPhoneApp());
     await tester.pump();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+    // Verify app bar title elements
+    expect(find.text('NexPhone'), findsOneWidget);
+    expect(find.text('Quantum-Safe Satellite Store'), findsOneWidget);
   });
 }
