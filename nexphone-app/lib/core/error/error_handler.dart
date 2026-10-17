@@ -7,6 +7,19 @@ class ErrorHandler {
 
   static Failure handle(dynamic error) {
     if (error is DioException) {
+      if (error.error is Failure) return error.error as Failure;
+      if (error.error is ServerException) {
+        final se = error.error as ServerException;
+        return ServerFailure(se.message, se.code);
+      }
+      if (error.error is UnauthorizedException) {
+        final ue = error.error as UnauthorizedException;
+        return AuthFailure(ue.message, 'UNAUTHORIZED');
+      }
+      if (error.error is NetworkException) {
+        final ne = error.error as NetworkException;
+        return NetworkFailure(ne.message);
+      }
       return _handleDioError(error);
     } else if (error is ServerException) {
       return ServerFailure(error.message, error.code);

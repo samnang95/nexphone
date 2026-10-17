@@ -7,9 +7,9 @@ import '../../firebase_options.dart';
 import '../config/app_environment.dart';
 import '../localization/localization_service.dart';
 import '../services/wakelock_service.dart';
+import '../theme/theme_service.dart';
 import 'app.dart';
 
-/// Bootstrap runner function for initializing core services and launching the app.
 Future<void> runNexPhoneApp({
   String? envFile,
   EnvironmentType type = EnvironmentType.dev,
@@ -34,6 +34,12 @@ Future<void> runNexPhoneApp({
   }
 
   try {
+    await ThemeService.init();
+  } catch (e) {
+    debugPrint('ThemeService.init warning: $e');
+  }
+
+  try {
     await Firebase.initializeApp(
       options: DefaultFirebaseOptions.currentPlatform,
     );
@@ -41,10 +47,7 @@ Future<void> runNexPhoneApp({
     debugPrint('Firebase.initializeApp warning: $e');
   }
 
-  final env = environment ??
-      (envFile != null
-          ? await AppEnvironment.fromDotEnv(envFile, type: type)
-          : (type == EnvironmentType.dev ? AppEnvironment.dev : AppEnvironment.prod));
+  final env = environment ?? (envFile != null ? await AppEnvironment.fromDotEnv(envFile, type: type) : (type == EnvironmentType.dev ? AppEnvironment.dev : AppEnvironment.prod));
 
   AppEnvironment.setup(env);
   await initDependencies(baseUrl: env.baseUrl);

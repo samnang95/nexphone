@@ -1,19 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
 import '../../domain/products/entities/product_entity.dart';
+import '../../features/account/bloc/account_bloc.dart';
+import '../../features/account/bloc/account_event.dart';
+import '../../features/account/pages/account_page.dart';
 import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/register_page.dart';
 import '../../features/home/pages/home_page.dart';
 import '../../features/products/pages/product_detail_page.dart';
-
-class AppRoutes {
-  AppRoutes._();
-
-  static const String home = '/';
-  static const String login = '/login';
-  static const String register = '/register';
-  static const String productDetail = '/product-detail';
-}
+import '../di/injection.dart';
+import 'app_routes.dart';
 
 class AppRouter {
   AppRouter._();
@@ -46,6 +43,14 @@ class AppRouter {
           path: AppRoutes.register,
           name: 'register',
           builder: (context, state) => const RegisterPage(),
+        ),
+        GoRoute(
+          path: AppRoutes.account,
+          name: 'account',
+          builder: (context, state) => BlocProvider<AccountBloc>(
+            create: (_) => sl<AccountBloc>()..add(const AccountRequested()),
+            child: const AccountPage(),
+          ),
         ),
         GoRoute(
           path: AppRoutes.productDetail,

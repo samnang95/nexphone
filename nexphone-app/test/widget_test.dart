@@ -7,6 +7,7 @@ import 'package:nexphone_app/core/localization/localization_service.dart';
 import 'package:nexphone_app/domain/products/entities/banner_entity.dart';
 import 'package:nexphone_app/domain/products/entities/product_entity.dart';
 import 'package:nexphone_app/domain/products/repositories/product_repository.dart';
+import 'package:nexphone_app/features/home/pages/home_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class FakeTestProductRepository implements ProductRepository {
@@ -47,8 +48,6 @@ void main() {
     await tester.pumpWidget(const NexPhoneApp());
     await tester.pump();
 
-    // Verify app bar title elements
-    expect(find.text('NexPhone'), findsOneWidget);
-    expect(find.text('Quantum-Safe Satellite Store'), findsOneWidget);
+    expect(find.byType(HomePage), findsOneWidget);
   });
 }

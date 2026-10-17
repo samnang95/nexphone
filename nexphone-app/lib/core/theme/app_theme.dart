@@ -8,33 +8,42 @@ import 'custom/app_input_theme.dart';
 class AppTheme {
   AppTheme._();
 
+  static final Map<String?, ThemeData> _darkCache = {};
+  static final Map<String?, ThemeData> _lightCache = {};
+
   static ThemeData darkTheme({String? fontFamily = 'NotoSans'}) {
-    return ThemeData(
-      useMaterial3: true,
-      fontFamily: fontFamily,
-      fontFamilyFallback: const ['NotoSans', 'Hanuman'],
-      brightness: Brightness.dark,
-      scaffoldBackgroundColor: AppColorScheme.darkScaffoldBackgroundColor,
-      colorScheme: AppColorScheme.darkColorScheme,
-      appBarTheme: CustomAppBarTheme.darkAppBarTheme,
-      cardTheme: CustomCardTheme.darkCardTheme,
-      inputDecorationTheme: CustomInputTheme.darkInputTheme,
-      elevatedButtonTheme: CustomButtonTheme.darkElevatedButtonTheme,
+    return _darkCache.putIfAbsent(
+      fontFamily,
+      () => ThemeData(
+        useMaterial3: true,
+        fontFamily: fontFamily,
+        fontFamilyFallback: const ['NotoSans', 'Hanuman'],
+        brightness: Brightness.dark,
+        scaffoldBackgroundColor: AppColorScheme.darkScaffoldBackgroundColor,
+        colorScheme: AppColorScheme.darkColorScheme,
+        appBarTheme: CustomAppBarTheme.darkAppBarTheme,
+        cardTheme: CustomCardTheme.darkCardTheme,
+        inputDecorationTheme: CustomInputTheme.darkInputTheme,
+        elevatedButtonTheme: CustomButtonTheme.darkElevatedButtonTheme,
+      ),
     );
   }
 
   static ThemeData lightTheme({String? fontFamily = 'NotoSans'}) {
-    return ThemeData(
-      useMaterial3: true,
-      fontFamily: fontFamily,
-      fontFamilyFallback: const ['NotoSans', 'Hanuman'],
-      brightness: Brightness.light,
-      scaffoldBackgroundColor: AppColorScheme.lightScaffoldBackgroundColor,
-      colorScheme: AppColorScheme.lightColorScheme,
-      appBarTheme: CustomAppBarTheme.lightAppBarTheme,
-      cardTheme: CustomCardTheme.lightCardTheme,
-      inputDecorationTheme: CustomInputTheme.lightInputTheme,
-      elevatedButtonTheme: CustomButtonTheme.lightElevatedButtonTheme,
+    return _lightCache.putIfAbsent(
+      fontFamily,
+      () => ThemeData(
+        useMaterial3: true,
+        fontFamily: fontFamily,
+        fontFamilyFallback: const ['NotoSans', 'Hanuman'],
+        brightness: Brightness.light,
+        scaffoldBackgroundColor: AppColorScheme.lightScaffoldBackgroundColor,
+        colorScheme: AppColorScheme.lightColorScheme,
+        appBarTheme: CustomAppBarTheme.lightAppBarTheme,
+        cardTheme: CustomCardTheme.lightCardTheme,
+        inputDecorationTheme: CustomInputTheme.lightInputTheme,
+        elevatedButtonTheme: CustomButtonTheme.lightElevatedButtonTheme,
+      ),
     );
   }
 }

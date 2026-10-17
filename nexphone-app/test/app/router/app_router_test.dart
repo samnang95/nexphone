@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:nexphone_app/app/router/app_router.dart';
+import 'package:nexphone_app/app/router/app_routes.dart';
 
 void main() {
   setUp(() {
@@ -28,6 +29,7 @@ void main() {
       expect(paths, contains(AppRoutes.login));
       expect(paths, contains(AppRoutes.register));
       expect(paths, contains(AppRoutes.productDetail));
+      expect(paths, contains(AppRoutes.account));
     });
 
     test('reset clears router instance', () {

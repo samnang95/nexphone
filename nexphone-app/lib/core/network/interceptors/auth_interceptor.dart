@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import '../../constants/app_constants.dart';
 import '../../storage/secure_storage_service.dart';
 import '../api_endpoints.dart';
 
@@ -9,7 +10,14 @@ class AuthInterceptor extends QueuedInterceptor {
   AuthInterceptor({
     required this.storage,
     required String baseUrl,
-  }) : _authDio = Dio(BaseOptions(baseUrl: baseUrl));
+  }) : _authDio = Dio(
+          BaseOptions(
+            baseUrl: baseUrl,
+            connectTimeout: AppConstants.connectTimeout,
+            receiveTimeout: AppConstants.receiveTimeout,
+            sendTimeout: AppConstants.sendTimeout,
+          ),
+        );
 
   @override
   Future<void> onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
