@@ -60,7 +60,7 @@ class AppEmptyState extends StatelessWidget {
               AppButton(
                 text: buttonText!,
                 onPressed: onRetry,
-                width: 160,
+                width: 180,
                 variant: AppButtonVariant.primary,
               ),
             ],

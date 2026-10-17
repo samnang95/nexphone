@@ -114,13 +114,14 @@ class _AccountContent extends StatelessWidget {
         AccountSection(
           title: 'Order & Shopping Hub',
           actionLabel: 'View History',
-          onAction: () {},
+          onAction: () => context.push(AppRoutes.orders),
           tiles: [
             AccountMenuTile(
               icon: Icons.inventory_2_outlined,
               title: 'My Orders',
               subtitle: '6 total orders placed this year',
               badge: AccountBadge(label: '1 on the way', color: cs.primary),
+              onTap: () => context.push(AppRoutes.orders),
             ),
             AccountMenuTile(
               icon: Icons.bookmark_border_rounded,

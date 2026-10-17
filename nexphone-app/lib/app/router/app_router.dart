@@ -8,6 +8,9 @@ import '../../features/account/pages/account_page.dart';
 import '../../features/auth/pages/login_page.dart';
 import '../../features/auth/pages/register_page.dart';
 import '../../features/home/pages/home_page.dart';
+import '../../features/orders/bloc/order_bloc.dart';
+import '../../features/orders/bloc/order_event.dart';
+import '../../features/orders/pages/orders_page.dart';
 import '../../features/products/pages/product_detail_page.dart';
 import '../di/injection.dart';
 import 'app_routes.dart';
@@ -50,6 +53,14 @@ class AppRouter {
           builder: (context, state) => BlocProvider<AccountBloc>(
             create: (_) => sl<AccountBloc>()..add(const AccountRequested()),
             child: const AccountPage(),
+          ),
+        ),
+        GoRoute(
+          path: AppRoutes.orders,
+          name: 'orders',
+          builder: (context, state) => BlocProvider<OrderBloc>(
+            create: (_) => sl<OrderBloc>()..add(const OrdersRequested()),
+            child: const OrdersPage(),
           ),
         ),
         GoRoute(

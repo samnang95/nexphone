@@ -30,6 +30,7 @@ void main() {
       expect(paths, contains(AppRoutes.register));
       expect(paths, contains(AppRoutes.productDetail));
       expect(paths, contains(AppRoutes.account));
+      expect(paths, contains(AppRoutes.orders));
     });
 
     test('reset clears router instance', () {
